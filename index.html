@@ -6,7 +6,6 @@
 <title>IT Equipment Manager (Full Version)</title>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-/* ================== CSS STYLES ================== */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
   --ink:#0f1117;--ink2:#3d4151;--ink3:#6b7280;--surface:#f8f9fc;--white:#ffffff;
@@ -93,7 +92,6 @@ tbody tr.click{cursor:pointer;}tbody tr.click:hover td{background:#f0f4ff}
 .toast{padding:11px 18px;border-radius:var(--r2);color:#fff;font-size:13px;font-weight:600;box-shadow:var(--sh2);min-width:220px;pointer-events:auto;}
 .toast-ok{background:var(--green)}.toast-err{background:var(--red)}.toast-info{background:var(--primary)}
 
-/* Hide Datalist indicator in Webkit */
 input::-webkit-calendar-picker-indicator { opacity: 0; }
 </style>
 </head>
@@ -227,7 +225,10 @@ input::-webkit-calendar-picker-indicator { opacity: 0; }
     </div>
   </div>
 
-</div></div><div id="modal-user" class="modal-overlay">
+</div>
+</div>
+
+<div id="modal-user" class="modal-overlay">
   <div class="modal">
     <h3 style="margin-bottom:16px" id="u-modal-title">เพิ่มพนักงานใหม่</h3>
     <div class="fg">
@@ -298,7 +299,7 @@ const App = {
       this.applyUserUI();
       this.showPage('dashboard');
       this.loadDocs();
-      this.loadUsers(); // Load users for HOD dropdown and User Management
+      this.loadUsers(); 
     } else {
       this.showPage('login');
     }
@@ -315,7 +316,7 @@ const App = {
   },
 
   async login() {
-    if(!GAS.url) { this.toast('กรุณากรอกและบันทึก GAS URL ก่อนการเข้าใช้งานครั้งแรก', 'err'); return; }
+    if(!GAS.url) { this.toast('กรุณากรอกและบันทึก GAS URL ก่อนเข้าใช้งาน', 'err'); return; }
     const empId = document.getElementById('login-empid').value.trim();
     const pass = document.getElementById('login-pass').value.trim();
     if(!empId || !pass) { this.toast('กรุณากรอกข้อมูลให้ครบช่อง', 'err'); return; }
@@ -345,9 +346,12 @@ const App = {
 
   saveGAS() {
     const url = document.getElementById('gas-url-input').value.trim();
-    if(!url) return;
+    if(!url) {
+      this.toast('กรุณาวาง URL ก่อนกดบันทึก', 'err');
+      return;
+    }
     GAS.save(url);
-    this.toast('บันทึกเส้นทางเชื่อมต่อเรียบร้อย', 'ok');
+    this.toast('บันทึก URL สำเร็จ', 'ok');
   },
 
   showPage(pageId, id=null) {
@@ -394,7 +398,6 @@ const App = {
     const q = (document.getElementById('search-inp').value || '').toLowerCase();
     let list = this.docs;
     
-    // RBAC: ถ้าไม่ใช่ ADMIN ให้เห็นเฉพาะเอกสารที่ตัวเองเป็น HOD
     if (this.user.role !== 'IT_ADMIN') {
       list = list.filter(d => d.hod && d.hod.empId === this.user.empId);
     }
@@ -452,7 +455,7 @@ const App = {
     `;
   },
 
-  // ================== FORM LOGIC (CREATE DOC) ==================
+  // ================== FORM LOGIC ==================
   resetCreateForm() {
     ['c-name', 'c-empid', 'c-pos', 'c-dept', 'c-hod'].forEach(id => document.getElementById(id).value = '');
     document.getElementById('equip-rows').innerHTML = '';
@@ -532,7 +535,7 @@ const App = {
         <td>${u.name}</td>
         <td><span class="badge ${u.role==='IT_ADMIN'?'badge-amber':'badge-gray'}">${u.role}</span></td>
         <td>
-          <button class="btn btn-ghost btn-sm" onclick="App.openUserModal('${u.empId}')">✏️ แก้ไข/รหัสผ่าน</button>
+          <button class="btn btn-ghost btn-sm" onclick="App.openUserModal('${u.empId}')">✏️ แก้ไข</button>
           ${u.empId !== 'admin' ? `<button class="btn btn-danger btn-sm" onclick="App.deleteUser('${u.empId}')">✕ ลบ</button>` : ''}
         </td>
       </tr>
@@ -581,7 +584,7 @@ const App = {
 
   async deleteUser(empId) {
     if(!confirm(`คุณแน่ใจสิทธิ์ที่จะลบผู้ใช้งาน ${empId} หรือไม่?`)) return;
-    this.showLoader('กำลังลบข้อมูลออกจากฐานข้อมูล...');
+    this.showLoader('กำลังลบข้อมูล...');
     try {
       await GAS.post({action:'deleteUser', empId});
       this.toast('ลบพนักงานสำเร็จ', 'ok');
@@ -595,7 +598,6 @@ const App = {
     const doc = this.docs.find(d => d.id === id);
     if(!doc) return;
 
-    // ชื่อไฟล์รูปภาพแบบฟอร์มว่างๆ ที่คุณเซฟไว้ในโฟลเดอร์เดียวกัน
     const bgImageUrl = 'bg-template.jpg'; 
 
     const html = `
@@ -624,7 +626,7 @@ const App = {
         .txt {
           position: absolute;
           font-size: 14px;
-          color: #1d4ed8; /* สีน้ำเงินจำลองปากกา/หมึกพิมพ์ */
+          color: #1d4ed8; 
           white-space: nowrap;
         }
 
@@ -655,22 +657,21 @@ const App = {
         <div class="check-mark" style="top: 105mm; left: 20mm;">✔</div> 
 
         ${doc.equipment.map((e, i) => {
-          const rowTop = 140 + (i * 7); // เริ่มต้นที่ 140mm และบวกบรรทัดละ 7mm
-          return \`
-            <div class="txt" style="top: \${rowTop}mm; left: 20mm;">\${e.name}</div>
-            <div class="txt" style="top: \${rowTop}mm; left: 55mm;">\${e.brand || '-'}</div>
-            <div class="txt" style="top: \${rowTop}mm; left: 85mm;">\${e.model || '-'}</div>
-            <div class="txt" style="top: \${rowTop}mm; left: 115mm; font-family: monospace;">\${e.serial || '-'}</div>
-            <div class="txt" style="top: \${rowTop}mm; left: 155mm; text-align: center; width: 15mm;">1</div>
-            <div class="txt" style="top: \${rowTop}mm; left: 175mm;">\${e.asset || '-'}</div>
-          \`;
+          const rowTop = 140 + (i * 7); 
+          return `
+            <div class="txt" style="top: ${rowTop}mm; left: 20mm;">${e.name}</div>
+            <div class="txt" style="top: ${rowTop}mm; left: 55mm;">${e.brand || '-'}</div>
+            <div class="txt" style="top: ${rowTop}mm; left: 85mm;">${e.model || '-'}</div>
+            <div class="txt" style="top: ${rowTop}mm; left: 115mm; font-family: monospace;">${e.serial || '-'}</div>
+            <div class="txt" style="top: ${rowTop}mm; left: 155mm; text-align: center; width: 15mm;">1</div>
+            <div class="txt" style="top: ${rowTop}mm; left: 175mm;">${e.asset || '-'}</div>
+          `;
         }).join('')}
 
         <div class="txt" style="top: 245mm; left: 35mm; width: 40mm; text-align: center;">( ${doc.emp.name} )</div>
       </div>
       
       <script>
-        // รอให้ภาพพื้นหลังโหลดเสร็จก่อนค่อยเปิดหน้าพิมพ์
         window.addEventListener('load', () => setTimeout(() => window.print(), 800));
       <\/script>
     </body>
@@ -681,7 +682,6 @@ const App = {
     window.open(url, '_blank');
   },
 
-  // ================== UTILS ==================
   showLoader(m) { document.getElementById('loading-text').textContent=m; document.getElementById('loading-overlay').classList.add('show'); },
   hideLoader() { document.getElementById('loading-overlay').classList.remove('show'); },
   toast(msg, type='ok') {
