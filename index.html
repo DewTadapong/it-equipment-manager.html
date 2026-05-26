@@ -3,19 +3,16 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>IT Equipment Manager</title>
+<title>IT Equipment Manager (Full Version)</title>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
+/* ================== CSS STYLES ================== */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --ink:#0f1117;--ink2:#3d4151;--ink3:#6b7280;
-  --surface:#f8f9fc;--white:#ffffff;
-  --border:#e2e5ec;--border2:#c8cdd8;
-  --primary:#2563eb;--primary-dark:#1d4ed8;--primary-muted:#eff6ff;
-  --green:#059669;--green-muted:#ecfdf5;--green-text:#065f46;
-  --amber:#d97706;--amber-muted:#fffbeb;--amber-text:#92400e;
-  --red:#dc2626;--red-muted:#fef2f2;
-  --r:6px;--r2:10px;--r3:14px;
+  --ink:#0f1117;--ink2:#3d4151;--ink3:#6b7280;--surface:#f8f9fc;--white:#ffffff;
+  --border:#e2e5ec;--border2:#c8cdd8;--primary:#2563eb;--primary-dark:#1d4ed8;--primary-muted:#eff6ff;
+  --green:#059669;--green-muted:#ecfdf5;--green-text:#065f46;--amber:#d97706;--amber-muted:#fffbeb;--amber-text:#92400e;
+  --red:#dc2626;--red-muted:#fef2f2;--r:6px;--r2:10px;--r3:14px;
   --sh:0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.05);
   --sh2:0 4px 12px rgba(0,0,0,.1),0 2px 4px rgba(0,0,0,.06);
   --sh3:0 20px 40px rgba(0,0,0,.15),0 8px 16px rgba(0,0,0,.08);
@@ -28,10 +25,9 @@ body{font-family:'IBM Plex Sans Thai',sans-serif;background:var(--surface);color
 .topbar-name{font-weight:700;font-size:15px;letter-spacing:-.3px}
 .topbar-sub{font-size:11px;opacity:.5;font-family:'IBM Plex Mono',monospace}
 .topbar-spacer{flex:1}
-.topbar-gas-status{font-size:11px;display:flex;align-items:center;gap:5px;padding:4px 10px;border-radius:99px;border:1px solid rgba(255,255,255,.15);cursor:pointer;transition:.15s}
-.topbar-gas-status:hover{background:rgba(255,255,255,.08)}
-.gas-dot{width:7px;height:7px;border-radius:50%;background:#6b7280;flex-shrink:0}
-.gas-dot.ok{background:#10b981}.gas-dot.err{background:#ef4444}
+.user-menu{display:none;align-items:center;gap:12px;font-size:13px;}
+.user-menu.active{display:flex;}
+.user-role-badge{background:rgba(255,255,255,.15);padding:2px 8px;border-radius:99px;font-size:11px; font-weight: bold; color: #fcd34d;}
 
 /* LOADING OVERLAY */
 .loading-overlay{position:fixed;inset:0;background:rgba(248,249,252,.9);z-index:500;display:none;flex-direction:column;align-items:center;justify-content:center;gap:14px;backdrop-filter:blur(4px)}
@@ -40,185 +36,75 @@ body{font-family:'IBM Plex Sans Thai',sans-serif;background:var(--surface);color
 @keyframes spin{to{transform:rotate(360deg)}}
 .loading-text{font-size:14px;font-weight:600;color:var(--ink2)}
 
-/* MAIN */
+/* MAIN & PAGES */
 .main{flex:1;max-width:1080px;margin:0 auto;width:100%;padding:28px 20px}
 .app{display:flex;flex-direction:column;min-height:100vh}
 .page{display:none}.page.active{display:block}
 
-/* CARDS */
+/* CARDS & TITLES */
 .card{background:var(--white);border-radius:var(--r3);border:1px solid var(--border);box-shadow:var(--sh);padding:24px}
 .card+.card{margin-top:16px}
 .sec-title{font-size:12px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px}
-.sec-icon{width:20px;height:20px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:11px;background:var(--primary-muted);color:var(--primary);flex-shrink:0}
-
-/* SETUP PAGE */
-.setup-wrap{max-width:680px;margin:0 auto;padding:40px 20px}
-.setup-logo{text-align:center;margin-bottom:32px}
-.setup-logo .icon{width:64px;height:64px;background:var(--primary);border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:32px;margin:0 auto 12px}
-.setup-logo h1{font-size:22px;font-weight:700;color:var(--ink)}
-.setup-logo p{color:var(--ink3);font-size:13px;margin-top:4px}
-.setup-steps{counter-reset:step;display:flex;flex-direction:column;gap:16px;margin-bottom:24px}
-.step-box{background:var(--white);border:1px solid var(--border);border-radius:var(--r2);padding:16px 18px;display:flex;gap:14px;align-items:flex-start;box-shadow:var(--sh)}
-.step-num{width:28px;height:28px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;margin-top:1px}
-.step-body h3{font-size:13px;font-weight:700;color:var(--ink);margin-bottom:4px}
-.step-body p{font-size:12px;color:var(--ink3);line-height:1.6}
-.step-body a{color:var(--primary);font-weight:600;text-decoration:none}
-.step-body a:hover{text-decoration:underline}
-.code-block{background:#1e1e2e;color:#cdd6f4;font-family:'IBM Plex Mono',monospace;font-size:11px;border-radius:var(--r);padding:12px 14px;margin-top:8px;white-space:pre;overflow-x:auto;position:relative}
-.code-copy-btn{position:absolute;top:8px;right:8px;background:rgba(255,255,255,.1);color:#cdd6f4;border:1px solid rgba(255,255,255,.15);border-radius:4px;padding:3px 8px;font-size:10px;font-weight:600;cursor:pointer;font-family:inherit;transition:.15s}
-.code-copy-btn:hover{background:rgba(255,255,255,.2)}
-.url-input-wrap{display:flex;gap:8px;align-items:center;margin-top:10px}
-.url-input-wrap input{flex:1;padding:9px 12px;border:1px solid var(--border2);border-radius:var(--r);font-size:13px;font-family:'IBM Plex Mono',monospace;outline:none;transition:.15s}
-.url-input-wrap input:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(37,99,235,.1)}
-.test-result{margin-top:10px;padding:10px 12px;border-radius:var(--r);font-size:12px;font-weight:600;display:none}
-.test-result.ok{background:var(--green-muted);color:var(--green-text);display:block}
-.test-result.err{background:var(--red-muted);color:var(--red);display:block}
-
-/* STATS */
-.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
-@media(max-width:640px){.stats-row{grid-template-columns:repeat(2,1fr)}}
-.stat{background:var(--white);border:1px solid var(--border);border-radius:var(--r2);padding:18px 20px;box-shadow:var(--sh);position:relative;overflow:hidden}
-.stat::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
-.stat.all::before{background:var(--primary)}.stat.pend::before{background:var(--amber)}.stat.done::before{background:var(--green)}.stat.ret::before{background:var(--ink3)}
-.stat-n{font-size:30px;font-weight:700;font-family:'IBM Plex Mono',monospace;color:var(--ink);line-height:1}
-.stat-l{font-size:12px;color:var(--ink3);margin-top:4px;font-weight:500}
 
 /* BUTTONS */
 .btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:var(--r);font-size:13px;font-weight:600;cursor:pointer;border:none;transition:.15s all;font-family:inherit;white-space:nowrap}
-.btn:active{transform:scale(.97)}.btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
+.btn:active{transform:scale(.97)}.btn:disabled{opacity:.45;cursor:not-allowed;}
 .btn-primary{background:var(--primary);color:#fff}.btn-primary:hover:not(:disabled){background:var(--primary-dark)}
 .btn-green{background:var(--green);color:#fff}.btn-green:hover:not(:disabled){background:#047857}
 .btn-ghost{background:transparent;color:var(--ink2);border:1px solid var(--border2)}.btn-ghost:hover:not(:disabled){background:var(--surface)}
-.btn-copy{background:#f0fdf4;color:var(--green);border:1px solid #bbf7d0}.btn-copy:hover{background:#dcfce7}
-.btn-sm{padding:5px 11px;font-size:12px}.btn-lg{padding:11px 22px;font-size:14px}
-.btn-icon{width:32px;height:32px;padding:0;justify-content:center}
+.btn-danger{background:var(--red-muted);color:var(--red);border:1px solid #fecaca}.btn-danger:hover{background:#fee2e2}
+.btn-sm{padding:5px 11px;font-size:12px}
 
-/* TOOLBAR & TABLE */
+/* LOGIN */
+.login-wrap{max-width:380px;margin:60px auto;text-align:center;}
+.login-box{background:#fff;padding:32px 24px;border-radius:var(--r3);box-shadow:var(--sh3);border:1px solid var(--border);text-align:left;}
+
+/* TABLES & TOOLBAR */
 .toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:16px}
 .search-wrap{flex:1;min-width:220px;position:relative}
-.search-wrap input{width:100%;padding:8px 12px 8px 36px;border:1px solid var(--border2);border-radius:var(--r);font-size:13px;font-family:inherit;background:var(--white);outline:none;transition:.15s}
-.search-wrap input:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(37,99,235,.1)}
+.search-wrap input{width:100%;padding:8px 12px 8px 36px;border:1px solid var(--border2);border-radius:var(--r);font-size:13px;font-family:inherit;background:var(--white);outline:none;}
 .search-icon{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--ink3)}
-.filter-sel{padding:8px 12px;border:1px solid var(--border2);border-radius:var(--r);font-size:13px;font-family:inherit;background:var(--white);cursor:pointer;outline:none;color:var(--ink)}
 .tbl-wrap{overflow-x:auto}
 table{width:100%;border-collapse:collapse}
-thead th{text-align:left;padding:9px 14px;font-size:11px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px;background:var(--surface);border-bottom:1px solid var(--border);white-space:nowrap}
+thead th{text-align:left;padding:9px 14px;font-size:11px;font-weight:700;color:var(--ink3);text-transform:uppercase;background:var(--surface);border-bottom:1px solid var(--border);white-space:nowrap}
 tbody td{padding:12px 14px;font-size:13px;border-bottom:1px solid var(--border);vertical-align:middle}
-tbody tr:last-child td{border-bottom:none}
-tbody tr.click{cursor:pointer;transition:.1s}tbody tr.click:hover td{background:#f0f4ff}
+tbody tr.click{cursor:pointer;}tbody tr.click:hover td{background:#f0f4ff}
 
-/* BADGES */
 .badge{display:inline-flex;align-items:center;gap:4px;padding:2px 9px;border-radius:99px;font-size:11px;font-weight:700}
-.badge-blue{background:#dbeafe;color:#1d4ed8}.badge-green{background:#d1fae5;color:#065f46}
-.badge-amber{background:#fef3c7;color:#92400e}.badge-gray{background:#f3f4f6;color:#374151}
-.badge-purple{background:#ede9fe;color:#5b21b6}
+.badge-blue{background:#dbeafe;color:#1d4ed8}.badge-amber{background:#fef3c7;color:#92400e}.badge-gray{background:#f3f4f6;color:#374151}
 
 /* FORMS */
-.fg{display:flex;flex-direction:column;gap:5px}
+.fg{display:flex;flex-direction:column;gap:5px;margin-bottom:12px}
 .fg label{font-size:12px;font-weight:600;color:var(--ink2)}
-.fg input,.fg select,.fg textarea{padding:8px 11px;border:1px solid var(--border2);border-radius:var(--r);font-size:13px;font-family:inherit;background:var(--white);outline:none;transition:.15s;color:var(--ink)}
-.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(37,99,235,.1)}
-.fg textarea{resize:vertical}
+.fg input,.fg select,.fg textarea{padding:8px 11px;border:1px solid var(--border2);border-radius:var(--r);font-size:13px;font-family:inherit;background:var(--white);outline:none;}
 .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 @media(max-width:580px){.form-grid{grid-template-columns:1fr}}
 .full{grid-column:1/-1}
 
-/* STEPPER */
-.stepper{display:flex;align-items:flex-start;margin-bottom:24px}
-.step-item{flex:1;display:flex;flex-direction:column;align-items:center;position:relative}
-.step-item::before{content:'';position:absolute;top:17px;left:calc(-50%);right:50%;height:2px;background:var(--border);z-index:0}
-.step-item:first-child::before{display:none}
-.step-item.done::before{background:var(--green)}.step-item.cur::before{background:var(--primary)}
-.step-dot{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;border:2px solid var(--border);background:var(--white);color:var(--ink3);z-index:1;position:relative;transition:.3s}
-.step-item.done .step-dot{background:var(--green);border-color:var(--green);color:#fff}
-.step-item.cur .step-dot{background:var(--primary);border-color:var(--primary);color:#fff;box-shadow:0 0 0 4px rgba(37,99,235,.2)}
-.step-lbl{font-size:11px;font-weight:600;color:var(--ink3);margin-top:7px;text-align:center}
-.step-item.done .step-lbl{color:var(--green)}.step-item.cur .step-lbl{color:var(--primary)}
-
-/* SIGNATURE CARDS */
-.sig-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
-@media(max-width:580px){.sig-grid{grid-template-columns:1fr}}
-.sig-card{border:1px solid var(--border);border-radius:var(--r2);overflow:hidden;background:var(--white)}
-.sig-card.cur-turn{border-color:var(--primary);box-shadow:0 0 0 2px rgba(37,99,235,.15)}
-.sig-head{padding:10px 14px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
-.sig-head-name{font-size:12px;font-weight:700;color:var(--ink2)}
-.sig-body{min-height:90px;display:flex;align-items:center;justify-content:center;padding:10px;background:#fafbfd}
-.sig-body img{max-height:75px;max-width:100%;object-fit:contain}
-.sig-placeholder{color:var(--border2);font-size:28px}
-.sig-foot{padding:8px 14px;font-size:11px;color:var(--ink3);border-top:1px solid var(--border)}
-.sig-foot strong{color:var(--ink2);display:block;font-size:12px;margin-bottom:1px}
-.sig-action{padding:10px 14px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:6px}
-
-/* SIGN MODAL TABS */
-.sign-tabs{display:flex;border-bottom:2px solid var(--border);margin-bottom:16px}
-.sign-tab{padding:8px 16px;font-size:13px;font-weight:600;cursor:pointer;color:var(--ink3);border-bottom:2px solid transparent;margin-bottom:-2px;transition:.15s;background:none;border-top:none;border-left:none;border-right:none;font-family:inherit}
-.sign-tab.active{color:var(--primary);border-bottom-color:var(--primary)}
-.sign-tab-pane{display:none}.sign-tab-pane.active{display:block}
-.upload-area{border:2px dashed var(--border2);border-radius:var(--r2);padding:28px;text-align:center;cursor:pointer;transition:.15s;background:#fafbfd}
-.upload-area:hover{border-color:var(--primary);background:var(--primary-muted)}
-.upload-area input[type=file]{display:none}
-.upload-preview-wrap{text-align:center;margin-top:12px}
-.upload-preview-wrap img{max-height:120px;max-width:100%;border:1px solid var(--border);border-radius:var(--r);padding:6px;background:#fff}
-.sign-canvas{width:100%;height:180px;border:2px dashed var(--border2);border-radius:var(--r2);background:#fff;cursor:crosshair;touch-action:none;display:block;transition:.15s}
-.sign-canvas:hover{border-color:var(--primary)}
+.info-grid {display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:15px;}
+.info-item .lbl {font-size:11px; color:var(--ink3); font-weight:600; text-transform:uppercase;}
+.info-item .val {font-size:14px; font-weight:600; color:var(--ink);}
 
 /* MODAL */
-.overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:1000;display:flex;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(2px)}
-.modal{background:#fff;border-radius:var(--r3);width:100%;max-width:500px;max-height:92vh;overflow-y:auto;box-shadow:var(--sh3)}
-.modal-hd{padding:20px 24px 16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;background:#fff;z-index:10}
-.modal-title{font-size:16px;font-weight:700}
-.modal-close{background:none;border:none;font-size:18px;cursor:pointer;color:var(--ink3);width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:4px;transition:.1s}
-.modal-close:hover{background:var(--surface);color:var(--ink)}
-.modal-body{padding:20px 24px}
-.modal-ft{padding:16px 24px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;display:none;align-items:center;justify-content:center;padding:16px;}
+.modal{background:#fff;border-radius:var(--r3);width:100%;max-width:480px;padding:24px;box-shadow:var(--sh3);overflow-y:auto;max-height:90vh;}
 
-/* SIGN LINK BANNER */
-.signlink-banner{background:linear-gradient(135deg,#1d4ed8,#2563eb);color:#fff;border-radius:var(--r2);padding:14px 18px;margin-bottom:20px;display:flex;align-items:center;gap:12px}
-.signlink-banner h3{font-size:15px;font-weight:700;margin-bottom:2px}
-.signlink-banner p{font-size:12px;opacity:.85}
-
-/* MISC */
-.bc{display:flex;align-items:center;gap:8px;margin-bottom:22px;font-size:12px;color:var(--ink3)}
-.bc a{color:var(--primary);cursor:pointer;font-weight:600}.bc a:hover{text-decoration:underline}
-.doc-hd{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:14px;margin-bottom:24px}
-.doc-id-big{font-size:22px;font-weight:700;font-family:'IBM Plex Mono',monospace;color:var(--ink)}
-.doc-meta{font-size:12px;color:var(--ink3);margin-top:4px}
-.info-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
-@media(max-width:580px){.info-grid{grid-template-columns:1fr}}
-.info-item .lbl{font-size:11px;font-weight:600;color:var(--ink3);text-transform:uppercase;letter-spacing:.4px;margin-bottom:2px}
-.info-item .val{font-size:13px;font-weight:600;color:var(--ink)}
-.return-bar{border:1px solid #fcd34d;border-radius:var(--r2);padding:16px;background:var(--amber-muted);margin-top:16px}
-.return-bar h4{font-size:13px;font-weight:700;color:var(--amber-text);margin-bottom:6px}
-.returned-banner{background:var(--green-muted);border:1px solid #6ee7b7;border-radius:var(--r2);padding:14px 18px;display:flex;align-items:center;gap:12px;margin-bottom:16px}
-.div{border:none;border-top:1px solid var(--border);margin:20px 0}
-.equip-tbl{width:100%;border-collapse:collapse}
-.equip-tbl th{text-align:left;padding:8px 10px;font-size:11px;font-weight:700;color:var(--ink3);text-transform:uppercase;background:var(--surface);border-bottom:1px solid var(--border)}
-.equip-tbl td{padding:5px 8px;border-bottom:1px solid var(--border)}
-.equip-tbl input,.equip-tbl select{width:100%;padding:6px 9px;border:1px solid var(--border);border-radius:var(--r);font-size:12px;font-family:inherit;background:#fff;outline:none;transition:.15s}
-.equip-tbl input:focus,.equip-tbl select:focus{border-color:var(--primary)}
-.action-bar{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px;padding-top:20px;border-top:1px solid var(--border)}
-.ret-equip-item{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px}
-.ret-equip-item:last-child{border-bottom:none}
-.empty{text-align:center;padding:48px 24px;color:var(--ink3)}
-.empty-icon{font-size:44px;margin-bottom:12px;opacity:.4}
-
-/* TOASTS */
 .toasts{position:fixed;bottom:20px;right:20px;z-index:9000;display:flex;flex-direction:column;gap:8px;pointer-events:none}
-.toast{padding:11px 18px;border-radius:var(--r2);color:#fff;font-size:13px;font-weight:600;box-shadow:var(--sh2);animation:tin .3s ease;min-width:220px;pointer-events:auto}
+.toast{padding:11px 18px;border-radius:var(--r2);color:#fff;font-size:13px;font-weight:600;box-shadow:var(--sh2);min-width:220px;pointer-events:auto;}
 .toast-ok{background:var(--green)}.toast-err{background:var(--red)}.toast-info{background:var(--primary)}
-@keyframes tin{from{transform:translateX(110%);opacity:0}to{transform:translateX(0);opacity:1}}
+
+/* Hide Datalist indicator in Webkit */
+input::-webkit-calendar-picker-indicator { opacity: 0; }
 </style>
 </head>
 <body>
 <div class="app">
 
-<!-- LOADING OVERLAY -->
 <div class="loading-overlay" id="loading-overlay">
   <div class="spinner"></div>
   <div class="loading-text" id="loading-text">กำลังโหลด...</div>
 </div>
 
-<!-- TOPBAR -->
 <header class="topbar">
   <div class="topbar-icon">💻</div>
   <div>
@@ -226,295 +112,147 @@ tbody tr.click{cursor:pointer;transition:.1s}tbody tr.click:hover td{background:
     <div class="topbar-sub">ระบบจัดการเอกสารส่งมอบอุปกรณ์</div>
   </div>
   <div class="topbar-spacer"></div>
-  <div class="topbar-gas-status" id="gas-status-btn" onclick="App.showPage('setup')" title="Google Apps Script Settings">
-    <div class="gas-dot" id="gas-dot"></div>
-    <span id="gas-status-txt">ตั้งค่า GAS</span>
+  <div class="user-menu" id="user-menu">
+    <div style="text-align:right">
+      <div id="u-name" style="font-weight:600"></div>
+      <div id="u-role" class="user-role-badge"></div>
+    </div>
+    <button class="btn btn-ghost btn-sm" id="btn-manage-users" onclick="App.showPage('users')" style="border-color:rgba(255,255,255,.2);color:#fff;display:none;">👥 จัดการผู้ใช้</button>
+    <button class="btn btn-primary btn-sm" onclick="App.logout()">🚪 ออกจากระบบ</button>
   </div>
-  <button class="btn btn-primary btn-sm" id="btn-new-doc" onclick="App.showPage('create')" style="display:none">+ สร้างเอกสาร</button>
 </header>
 
 <div class="main">
 
-  <!-- ═══ SETUP PAGE ═══ -->
-  <div id="page-setup" class="page active">
-    <div class="setup-wrap">
-      <div class="setup-logo">
-        <div class="icon">💻</div>
-        <h1>IT Equipment Manager</h1>
-        <p>เชื่อมต่อ Google Apps Script เพื่อเริ่มใช้งาน</p>
+  <div id="page-login" class="page active">
+    <div class="login-wrap">
+      <div style="font-size:40px;margin-bottom:16px;">🔐</div>
+      <h2 style="margin-bottom:8px">เข้าสู่ระบบ</h2>
+      <p style="color:var(--ink3);font-size:13px;margin-bottom:24px">กรุณาเข้าสู่ระบบเพื่อใช้งาน IT Equipment Manager</p>
+      <div class="login-box">
+        <div class="fg">
+          <label>รหัสพนักงาน</label>
+          <input type="text" id="login-empid" placeholder="เช่น admin หรือ EMP01">
+        </div>
+        <div class="fg">
+          <label>รหัสผ่าน</label>
+          <input type="password" id="login-pass" placeholder="••••••••" onkeyup="if(event.key === 'Enter') App.login()">
+        </div>
+        <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:10px;padding:10px" onclick="App.login()">เข้าสู่ระบบ</button>
       </div>
-
-      <div class="setup-steps">
-
-        <div class="step-box">
-          <div class="step-num">1</div>
-          <div class="step-body">
-            <h3>เปิด Google Apps Script</h3>
-            <p>ไปที่ <a href="https://script.google.com" target="_blank">script.google.com</a> → คลิก <strong>New Project</strong></p>
-          </div>
+      
+      <div style="margin-top:40px;padding-top:20px;border-top:1px dashed var(--border2);">
+        <p style="font-size:11px;color:var(--ink3);margin-bottom:8px">การเชื่อมต่อเบื้องหลัง (Google Apps Script URL)</p>
+        <div style="display:flex;gap:5px">
+          <input type="text" id="gas-url-input" placeholder="https://script.google.com/macros/s/.../exec" style="flex:1;padding:6px;font-size:11px;border:1px solid var(--border2);border-radius:4px;">
+          <button class="btn btn-ghost btn-sm" onclick="App.saveGAS()">บันทึก URL</button>
         </div>
-
-        <div class="step-box">
-          <div class="step-num">2</div>
-          <div class="step-body">
-            <h3>วางโค้ดลงใน Code.gs</h3>
-            <p>ลบโค้ดเดิมออก แล้ว copy โค้ดด้านล่างนี้ทั้งหมดวางแทน</p>
-            <div class="code-block" id="gas-code-block">
-<button class="code-copy-btn" onclick="App.copyGasCode()">Copy</button>
-/**
- * IT Equipment Manager — Google Apps Script Backend
- * Deploy: Execute as "Me" | Who has access: Anyone
- */
-const FOLDER_NAME = 'IT_Equipment_Manager';
-
-function doGet(e) {
-  try {
-    const action = (e.parameter && e.parameter.action) || 'test';
-    if (action === 'test')   return respond({status:'ok',message:'API พร้อมใช้งาน ✓',ts:new Date().toISOString()});
-    if (action === 'getAll') return respond({docs:getAllDocs()});
-    if (action === 'getDoc') return respond({doc:getDocById(e.parameter.id)});
-    return respond({error:'Unknown action'});
-  } catch(ex) { return respond({error:ex.toString()}); }
-}
-function doPost(e) {
-  try {
-    const b = JSON.parse(e.postData.contents);
-    if (b.action === 'saveDoc')   return respond(saveDoc(b.doc));
-    if (b.action === 'deleteDoc') return respond(deleteDoc(b.id));
-    return respond({error:'Unknown action'});
-  } catch(ex) { return respond({error:ex.toString()}); }
-}
-function respond(data) {
-  const o = ContentService.createTextOutput(JSON.stringify(data));
-  o.setMimeType(ContentService.MimeType.JSON);
-  return o;
-}
-function getFolder() {
-  const i = DriveApp.getFoldersByName(FOLDER_NAME);
-  return i.hasNext() ? i.next() : DriveApp.createFolder(FOLDER_NAME);
-}
-function getAllDocs() {
-  const folder = getFolder(), files = folder.getFiles(), docs = [];
-  while (files.hasNext()) {
-    const f = files.next();
-    if (f.getName().endsWith('.json')) {
-      try { docs.push(JSON.parse(f.getBlob().getDataAsString('utf-8'))); } catch(e){}
-    }
-  }
-  return docs.sort((a,b)=>new Date(b.createdAt||0)-new Date(a.createdAt||0));
-}
-function getDocById(id) {
-  if (!id) return null;
-  const f = getFolder().getFilesByName(id+'.json');
-  return f.hasNext() ? JSON.parse(f.next().getBlob().getDataAsString('utf-8')) : null;
-}
-function saveDoc(doc) {
-  if (!doc||!doc.id) throw new Error('Document must have id');
-  const lock = LockService.getScriptLock();
-  if (!lock.tryLock(20000)) throw new Error('Server busy, retry');
-  try {
-    const folder = getFolder(), fn = doc.id+'.json', c = JSON.stringify(doc);
-    const files = folder.getFilesByName(fn);
-    files.hasNext() ? files.next().setContent(c) : folder.createFile(fn, c, MimeType.PLAIN_TEXT);
-    return {saved:true, id:doc.id};
-  } finally { lock.releaseLock(); }
-}
-function deleteDoc(id) {
-  if (!id) throw new Error('id required');
-  const f = getFolder().getFilesByName(id+'.json');
-  if (!f.hasNext()) throw new Error('Not found: '+id);
-  f.next().setTrashed(true);
-  return {deleted:true, id};
-}</div>
-          </div>
-        </div>
-
-        <div class="step-box">
-          <div class="step-num">3</div>
-          <div class="step-body">
-            <h3>Deploy เป็น Web App</h3>
-            <p>คลิก <strong>Deploy → New Deployment → Web App</strong><br>
-            ตั้งค่า: <strong>Execute as: Me</strong> | <strong>Who has access: Anyone</strong><br>
-            กด Deploy → Allow → Copy <strong>Web App URL</strong></p>
-          </div>
-        </div>
-
-        <div class="step-box">
-          <div class="step-num">4</div>
-          <div class="step-body">
-            <h3>วาง Web App URL ด้านล่าง</h3>
-            <p>URL จะมีรูปแบบ: <code style="font-family:'IBM Plex Mono',monospace;font-size:11px;background:var(--surface);padding:1px 5px;border-radius:3px">https://script.google.com/macros/s/.../exec</code></p>
-            <div class="url-input-wrap">
-              <input id="gas-url-input" placeholder="https://script.google.com/macros/s/.../exec" value="">
-              <button class="btn btn-ghost btn-sm" onclick="App.testGAS()">🔍 Test</button>
-            </div>
-            <div id="test-result" class="test-result"></div>
-          </div>
-        </div>
-
-      </div>
-
-      <div style="display:flex;gap:10px;justify-content:center">
-        <button class="btn btn-ghost" id="setup-back-btn" onclick="App.showPage('dashboard')" style="display:none">← กลับ</button>
-        <button class="btn btn-primary btn-lg" onclick="App.saveGASUrl()">บันทึกและเริ่มใช้งาน →</button>
       </div>
     </div>
   </div>
 
-  <!-- ═══ DASHBOARD ═══ -->
   <div id="page-dashboard" class="page">
-    <div class="stats-row" id="stats-row"></div>
     <div class="card">
       <div class="toolbar">
         <div class="search-wrap">
           <span class="search-icon">🔍</span>
-          <input type="text" id="search-inp" placeholder="ค้นหาเลขที่เอกสาร, ชื่อพนักงาน, รหัส..." oninput="App.filter()">
+          <input type="text" id="search-inp" placeholder="ค้นหาเลขที่เอกสาร, ชื่อพนักงาน..." oninput="App.renderDocs()">
         </div>
-        <select class="filter-sel" id="filter-status" onchange="App.filter()">
-          <option value="">สถานะทั้งหมด</option>
-          <option value="pending_it_officer">รอ IT Officer</option>
-          <option value="pending_it_manager">รอ IT Manager</option>
-          <option value="pending_recipient">รอผู้รับอุปกรณ์</option>
-          <option value="completed">ครบถ้วน</option>
-          <option value="returned">คืนแล้ว</option>
-        </select>
-        <button class="btn btn-primary" onclick="App.showPage('create')">+ สร้างเอกสาร</button>
-        <button class="btn btn-ghost btn-sm" onclick="App.loadAll()" title="Refresh">↺</button>
+        <button class="btn btn-primary" id="btn-create-doc" onclick="App.showPage('create')">+ สร้างเอกสาร</button>
+        <button class="btn btn-ghost" onclick="App.loadDocs()" title="Refresh">↺ รีเฟรช</button>
       </div>
       <div class="tbl-wrap">
         <table>
-          <thead><tr><th>เลขที่เอกสาร</th><th>วันที่</th><th>พนักงาน</th><th>แผนก</th><th>อุปกรณ์</th><th>สถานะ</th><th></th></tr></thead>
+          <thead><tr><th>เลขที่เอกสาร</th><th>วันที่สร้าง</th><th>ชื่อพนักงาน</th><th>แผนก</th><th>หัวหน้างาน (HOD)</th><th>สถานะ</th><th>การจัดการ</th></tr></thead>
           <tbody id="doc-tbody"></tbody>
         </table>
       </div>
     </div>
   </div>
 
-  <!-- ═══ CREATE ═══ -->
   <div id="page-create" class="page">
-    <div class="bc"><a onclick="App.showPage('dashboard')">🏠 หน้าหลัก</a><span>›</span><span>สร้างเอกสาร</span></div>
+    <div style="margin-bottom:16px"><a href="#" onclick="App.showPage('dashboard');return false;">← กลับหน้าหลัก</a></div>
     <div class="card">
-      <div class="sec-title"><span class="sec-icon">👤</span> ข้อมูลพนักงานผู้รับอุปกรณ์</div>
+      <div class="sec-title">👤 ข้อมูลพนักงานผู้รับมอบเครื่อง</div>
       <div class="form-grid">
-        <div class="fg"><label>ชื่อ-นามสกุล *</label><input id="c-name" placeholder="สมชาย ใจดี"></div>
+        <div class="fg"><label>ชื่อ-นามสกุลพนักงาน *</label><input id="c-name" placeholder="สมชาย ใจดี"></div>
         <div class="fg"><label>รหัสพนักงาน *</label><input id="c-empid" placeholder="EMP-001"></div>
         <div class="fg"><label>ตำแหน่ง *</label><input id="c-pos" placeholder="Software Engineer"></div>
-        <div class="fg"><label>แผนก *</label><input id="c-dept" placeholder="Information Technology"></div>
-        <div class="fg"><label>อีเมล</label><input id="c-email" type="email" placeholder="name@company.com"></div>
-        <div class="fg"><label>เบอร์โทร</label><input id="c-phone" placeholder="0812345678"></div>
-        <div class="fg full"><label>หมายเหตุ</label><textarea id="c-note" rows="2" placeholder="หมายเหตุ..."></textarea></div>
+        <div class="fg"><label>แผนก *</label><input id="c-dept" placeholder="IT"></div>
+        
+        <div class="fg full" style="background:var(--primary-muted);padding:14px;border-radius:var(--r);border:1px solid #bfdbfe; margin-top:10px;">
+          <label style="color:var(--primary-dark)">ชื่อ-นามสกุล หัวหน้างาน (HOD) *</label>
+          <p style="font-size:11px;color:var(--ink3);margin-bottom:6px">พิมพ์รหัสพนักงานหรือชื่อเพื่อค้นหาหัวหน้างานในระบบ</p>
+          <input list="hod-list" id="c-hod" placeholder="พิมพ์ค้นหา เช่น admin หรือ ชื่อ..." autocomplete="off">
+          <datalist id="hod-list"></datalist>
+        </div>
       </div>
     </div>
+
     <div class="card">
-      <div class="sec-title"><span class="sec-icon">🖥️</span> รายการอุปกรณ์ที่ส่งมอบ</div>
+      <div class="sec-title">🖥️ รายการอุปกรณ์คอมพิวเตอร์</div>
       <div class="tbl-wrap">
-        <table class="equip-tbl">
-          <thead><tr><th style="width:36px">#</th><th>ชื่ออุปกรณ์ *</th><th>ยี่ห้อ</th><th>รุ่น</th><th>Serial No.</th><th>Asset Tag</th><th>สภาพ</th><th style="width:40px"></th></tr></thead>
+        <table>
+          <thead><tr><th>ประเภทอุปกรณ์ *</th><th>ยี่ห้อ (Brand)</th><th>รุ่น (Model)</th><th>Serial Number</th><th>Asset Tag</th><th style="width:50px"></th></tr></thead>
           <tbody id="equip-rows"></tbody>
         </table>
       </div>
-      <button class="btn btn-ghost btn-sm" style="margin-top:12px" onclick="App.addRow()">+ เพิ่มอุปกรณ์</button>
+      <button class="btn btn-ghost btn-sm" style="margin-top:12px" onclick="App.addEquipRow()">+ เพิ่มแถวอุปกรณ์</button>
     </div>
-    <div style="display:flex;gap:10px;margin-top:16px">
+
+    <div style="margin-top:20px; display:flex; gap:10px; justify-content:flex-end">
       <button class="btn btn-ghost" onclick="App.showPage('dashboard')">ยกเลิก</button>
-      <button class="btn btn-primary btn-lg" onclick="App.createDoc()">บันทึกและดำเนินการต่อ →</button>
+      <button class="btn btn-primary" onclick="App.createDoc()">บันทึกและสร้างเอกสาร →</button>
     </div>
   </div>
 
-  <!-- ═══ DETAIL ═══ -->
   <div id="page-detail" class="page">
-    <div class="bc"><a onclick="App.showPage('dashboard')">🏠 หน้าหลัก</a><span>›</span><span id="detail-bc">เอกสาร</span></div>
+    <div style="margin-bottom:16px"><a href="#" onclick="App.showPage('dashboard');return false;">← กลับหน้าหลัก</a></div>
     <div id="detail-content"></div>
   </div>
 
-</div><!-- /main -->
-</div><!-- /app -->
-
-<!-- SIGN MODAL -->
-<div id="modal-sign" class="overlay" style="display:none">
-  <div class="modal">
-    <div class="modal-hd">
-      <div class="modal-title" id="sign-title">ลงลายมือชื่อ</div>
-      <button class="modal-close" onclick="App.closeSign()">✕</button>
-    </div>
-    <div class="modal-body">
-      <div class="fg" style="margin-bottom:16px">
-        <label id="sign-name-lbl">ชื่อ-นามสกุล *</label>
-        <input id="sign-name" placeholder="กรุณาระบุชื่อผู้ลงนาม">
+  <div id="page-users" class="page">
+    <div style="margin-bottom:16px"><a href="#" onclick="App.showPage('dashboard');return false;">← กลับหน้าหลัก</a></div>
+    <div class="card">
+      <div class="toolbar">
+        <h3 style="flex:1">รายชื่อและสิทธิ์ผู้ใช้งานระบบ</h3>
+        <button class="btn btn-primary" onclick="App.openUserModal()">+ เพิ่มพนักงาน / HOD</button>
       </div>
-      <div class="sign-tabs">
-        <button class="sign-tab active" id="tab-draw-btn" onclick="App.switchTab('draw')">✍️ วาดลายเซ็น</button>
-        <button class="sign-tab" id="tab-upload-btn" onclick="App.switchTab('upload')">📁 อัปโหลดรูป</button>
+      <div class="tbl-wrap" style="margin-top:16px">
+        <table>
+          <thead><tr><th>รหัสพนักงาน (Username)</th><th>ชื่อ-นามสกุล</th><th>ระดับสิทธิ์ (Role)</th><th>การจัดการ</th></tr></thead>
+          <tbody id="user-tbody"></tbody>
+        </table>
       </div>
-      <div class="sign-tab-pane active" id="tab-draw">
-        <canvas id="sign-canvas" class="sign-canvas"></canvas>
-        <div style="display:flex;justify-content:flex-end;margin-top:8px">
-          <button class="btn btn-ghost btn-sm" onclick="App.clearSign()">🗑 ล้าง</button>
-        </div>
-      </div>
-      <div class="sign-tab-pane" id="tab-upload">
-        <div class="upload-area" onclick="document.getElementById('sig-file').click()">
-          <input type="file" id="sig-file" accept="image/*" onchange="App.handleUpload(event)">
-          <div style="font-size:32px;margin-bottom:8px">🖼️</div>
-          <div style="font-weight:600;color:var(--ink2);margin-bottom:4px">คลิกเพื่อเลือกรูปลายเซ็น</div>
-          <div style="font-size:12px;color:var(--ink3)">รองรับ JPG, PNG — ไม่เกิน 2MB</div>
-        </div>
-        <div class="upload-preview-wrap" id="upload-preview-wrap" style="display:none">
-          <img id="upload-preview" src="" alt="preview">
-          <div style="margin-top:8px"><button class="btn btn-ghost btn-sm" onclick="App.clearUpload()">🗑 เปลี่ยน</button></div>
-        </div>
-      </div>
-    </div>
-    <div class="modal-ft">
-      <button class="btn btn-ghost" onclick="App.closeSign()">ยกเลิก</button>
-      <button class="btn btn-green" id="btn-confirm-sign" onclick="App.confirmSign()">✓ ยืนยันลงนาม</button>
     </div>
   </div>
-</div>
 
-<!-- RETURN MODAL -->
-<div id="modal-return" class="overlay" style="display:none">
+</div></div><div id="modal-user" class="modal-overlay">
   <div class="modal">
-    <div class="modal-hd">
-      <div class="modal-title">↩ รับคืนอุปกรณ์</div>
-      <button class="modal-close" onclick="document.getElementById('modal-return').style.display='none'">✕</button>
+    <h3 style="margin-bottom:16px" id="u-modal-title">เพิ่มพนักงานใหม่</h3>
+    <div class="fg">
+      <label>รหัสพนักงาน *</label>
+      <input type="text" id="u-empid" placeholder="เช่น EMP01">
     </div>
-    <div class="modal-body">
-      <p style="font-size:13px;color:var(--ink3);margin-bottom:16px">บันทึกการรับคืนอุปกรณ์ ระบุชื่อ IT ผู้รับคืนและลงลายมือชื่อ</p>
-      <div id="ret-equip-list" style="margin-bottom:16px;border:1px solid var(--border);border-radius:var(--r);padding:12px 14px"></div>
-      <div class="fg" style="margin-bottom:12px">
-        <label>ชื่อ IT Officer ผู้รับคืน *</label>
-        <input id="ret-name" placeholder="ชื่อ IT ผู้รับคืนอุปกรณ์">
-      </div>
-      <div class="sign-tabs">
-        <button class="sign-tab active" id="ret-tab-draw-btn" onclick="App.switchRetTab('draw')">✍️ วาดลายเซ็น</button>
-        <button class="sign-tab" id="ret-tab-upload-btn" onclick="App.switchRetTab('upload')">📁 อัปโหลดรูป</button>
-      </div>
-      <div class="sign-tab-pane active" id="ret-tab-draw">
-        <canvas id="ret-canvas" class="sign-canvas" style="height:150px"></canvas>
-        <div style="display:flex;justify-content:flex-end;margin-top:8px">
-          <button class="btn btn-ghost btn-sm" onclick="App.clearRet()">🗑 ล้าง</button>
-        </div>
-      </div>
-      <div class="sign-tab-pane" id="ret-tab-upload">
-        <div class="upload-area" onclick="document.getElementById('ret-sig-file').click()">
-          <input type="file" id="ret-sig-file" accept="image/*" onchange="App.handleRetUpload(event)">
-          <div style="font-size:28px;margin-bottom:6px">🖼️</div>
-          <div style="font-weight:600;color:var(--ink2);font-size:13px">คลิกเลือกรูปลายเซ็น</div>
-        </div>
-        <div class="upload-preview-wrap" id="ret-preview-wrap" style="display:none">
-          <img id="ret-upload-preview" src="" alt="preview">
-          <div style="margin-top:8px"><button class="btn btn-ghost btn-sm" onclick="App.clearRetUpload()">🗑 เปลี่ยน</button></div>
-        </div>
-      </div>
-      <div class="fg" style="margin-top:14px">
-        <label>หมายเหตุ</label>
-        <textarea id="ret-note" rows="2" placeholder="หมายเหตุ (ถ้ามี)..."></textarea>
-      </div>
+    <div class="fg">
+      <label>ชื่อ-นามสกุล *</label>
+      <input type="text" id="u-name-inp" placeholder="นายสมศักดิ์ รักดี">
     </div>
-    <div class="modal-ft">
-      <button class="btn btn-ghost" onclick="document.getElementById('modal-return').style.display='none'">ยกเลิก</button>
-      <button class="btn btn-green" id="btn-confirm-return" onclick="App.confirmReturn()">✓ ยืนยันรับคืน</button>
+    <div class="fg">
+      <label>ระดับสิทธิ์การเข้าถึง (Role)</label>
+      <select id="u-role-inp">
+        <option value="USER">USER (เข้าดูได้เฉพาะเอกสารที่ตนเองเป็น HOD)</option>
+        <option value="IT_ADMIN">IT_ADMIN (สิทธิ์แอดมินระบบ สร้างและดูได้ทั้งหมด)</option>
+      </select>
+    </div>
+    <div class="fg" id="u-pass-wrap" style="display:none;">
+       <label>เปลี่ยนรหัสผ่านใหม่ (หากต้องการเปลี่ยน)</label>
+       <input type="text" id="u-pass" placeholder="ใส่รหัสผ่านใหม่">
+    </div>
+    <p style="font-size:11px;color:var(--amber-text);margin-top:8px">** พนักงานสร้างใหม่ รหัสผ่านเริ่มต้นจะเป็น "รหัสพนักงาน" ตัวเอง</p>
+    <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:20px">
+      <button class="btn btn-ghost" onclick="document.getElementById('modal-user').style.display='none'">ยกเลิก</button>
+      <button class="btn btn-primary" onclick="App.saveUser()">บันทึกข้อมูล</button>
     </div>
   </div>
 </div>
@@ -524,675 +262,433 @@ function deleteDoc(id) {
 <script>
 'use strict';
 
-// ═══════════════════════════════════════════════════════════
-// GAS API LAYER
-// ═══════════════════════════════════════════════════════════
 const GAS = {
   url: '',
-
-  load() {
-    try { this.url = localStorage.getItem('ite_gas_url') || ''; } catch(e){ this.url=''; }
-  },
-
-  save(url) {
-    this.url = url.trim();
-    try { localStorage.setItem('ite_gas_url', this.url); } catch(e){}
-  },
-
-  isConfigured() { return !!this.url; },
-
-  async get(action, params = {}) {
-    const u = new URL(this.url);
-    u.searchParams.set('action', action);
+  load() { this.url = localStorage.getItem('ite_gas_url') || ''; },
+  save(url) { this.url = url; localStorage.setItem('ite_gas_url', url); },
+  async get(action, params={}) {
+    const u = new URL(this.url); u.searchParams.set('action', action);
     Object.entries(params).forEach(([k,v]) => u.searchParams.set(k, v));
     const r = await fetch(u.toString(), {redirect:'follow'});
-    if (!r.ok) throw new Error('HTTP ' + r.status);
     return r.json();
   },
-
   async post(data) {
-    // text/plain body → no CORS preflight needed
-    const r = await fetch(this.url, {
-      method: 'POST',
-      redirect: 'follow',
-      body: JSON.stringify(data)
-    });
-    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const r = await fetch(this.url, {method:'POST', redirect:'follow', body:JSON.stringify(data)});
     return r.json();
-  },
-
-  async test() {
-    const d = await this.get('test');
-    if (d.error) throw new Error(d.error);
-    return d;
-  },
-
-  async getAll() {
-    const d = await this.get('getAll');
-    if (d.error) throw new Error(d.error);
-    return d.docs || [];
-  },
-
-  async saveDoc(doc) {
-    const d = await this.post({action:'saveDoc', doc});
-    if (d.error) throw new Error(d.error);
-    return d;
-  },
-
-  async deleteDoc(id) {
-    const d = await this.post({action:'deleteDoc', id});
-    if (d.error) throw new Error(d.error);
-    return d;
   }
 };
 
-// ═══════════════════════════════════════════════════════════
-// APP
-// ═══════════════════════════════════════════════════════════
-const STEP_STATUS = {itOfficer:'pending_it_officer', itManager:'pending_it_manager', recipient:'pending_recipient'};
-const STEP_LABELS = {itOfficer:'IT Officer', itManager:'IT Manager', recipient:'ผู้รับอุปกรณ์'};
-
 const App = {
+  user: null,
   docs: [],
+  usersDB: [],
+  equipCount: 0,
   curId: null,
-  signTarget: null,
-  signCvs: null,
-  retCvs: null,
-  rowCount: 0,
-  signTab: 'draw',
-  retTab: 'draw',
-  uploadedSig: null,
-  retUploadedSig: null,
-  fromSignLink: false,
 
-  // ── INIT ──────────────────────────────────────────────────
   async init() {
     GAS.load();
-    this.addRow();
-
-    // Check sign link in URL hash
-    const hash = window.location.hash.slice(1);
-    if (hash) {
-      const p = new URLSearchParams(hash);
-      const docId = p.get('sign');
-      const role  = p.get('role');
-      const gas   = p.get('gas');
-      if (gas && !GAS.isConfigured()) GAS.save(decodeURIComponent(gas));
-      if (docId && role && GAS.isConfigured()) {
-        await this.handleSignLink(docId, role);
-        return;
-      }
-    }
-
-    if (!GAS.isConfigured()) {
-      this.showPage('setup');
-      return;
-    }
-    await this.loadAll();
-    this.showPage('dashboard');
+    document.getElementById('gas-url-input').value = GAS.url;
+    this.checkAuth();
   },
 
-  async loadAll() {
-    this.showLoader('กำลังโหลดข้อมูล...');
-    try {
-      this.docs = await GAS.getAll();
-      this.updateGasStatus(true);
-    } catch(e) {
-      this.docs = [];
-      this.updateGasStatus(false);
-      this.toast('โหลดข้อมูลไม่สำเร็จ: ' + e.message, 'err');
-    } finally {
-      this.hideLoader();
-    }
-  },
-
-  // ── SETUP ─────────────────────────────────────────────────
-  async testGAS() {
-    const url = document.getElementById('gas-url-input').value.trim();
-    if (!url) { this.toast('กรุณาวาง URL ก่อน', 'err'); return; }
-    const orig = GAS.url;
-    GAS.url = url;
-    const el = document.getElementById('test-result');
-    el.className = 'test-result'; el.textContent = '⏳ กำลัง test...'; el.style.display='block';
-    try {
-      const d = await GAS.test();
-      el.className = 'test-result ok';
-      el.textContent = '✓ เชื่อมต่อสำเร็จ — ' + (d.message||'API พร้อมใช้งาน');
-    } catch(e) {
-      el.className = 'test-result err';
-      el.textContent = '✗ เชื่อมต่อไม่ได้: ' + e.message;
-      GAS.url = orig;
-    }
-  },
-
-  async saveGASUrl() {
-    const url = document.getElementById('gas-url-input').value.trim();
-    if (!url) { this.toast('กรุณาวาง Web App URL', 'err'); return; }
-    if (!url.includes('script.google.com')) { this.toast('URL ไม่ถูกต้อง ต้องเป็น script.google.com/macros/...', 'err'); return; }
-    GAS.save(url);
-    this.showLoader('กำลังเชื่อมต่อ...');
-    try {
-      await GAS.test();
-      this.updateGasStatus(true);
-      await this.loadAll();
+  checkAuth() {
+    const saved = localStorage.getItem('ite_user');
+    if (saved) {
+      this.user = JSON.parse(saved);
+      this.applyUserUI();
       this.showPage('dashboard');
-      this.toast('เชื่อมต่อ Google Apps Script สำเร็จ ✓', 'ok');
-    } catch(e) {
+      this.loadDocs();
+      this.loadUsers(); // Load users for HOD dropdown and User Management
+    } else {
+      this.showPage('login');
+    }
+  },
+
+  applyUserUI() {
+    document.getElementById('user-menu').classList.add('active');
+    document.getElementById('u-name').textContent = this.user.name;
+    document.getElementById('u-role').textContent = this.user.role === 'IT_ADMIN' ? '👑 Admin' : '👤 HOD / User';
+    
+    const isAdmin = this.user.role === 'IT_ADMIN';
+    document.getElementById('btn-manage-users').style.display = isAdmin ? 'block' : 'none';
+    document.getElementById('btn-create-doc').style.display = isAdmin ? 'block' : 'none';
+  },
+
+  async login() {
+    if(!GAS.url) { this.toast('กรุณากรอกและบันทึก GAS URL ก่อนการเข้าใช้งานครั้งแรก', 'err'); return; }
+    const empId = document.getElementById('login-empid').value.trim();
+    const pass = document.getElementById('login-pass').value.trim();
+    if(!empId || !pass) { this.toast('กรุณากรอกข้อมูลให้ครบช่อง', 'err'); return; }
+
+    this.showLoader('กำลังตรวจสอบรหัสผ่าน...');
+    try {
+      const res = await GAS.post({action:'login', empId, pass});
+      if(res.error) throw new Error(res.error);
+      
+      this.user = res.user;
+      localStorage.setItem('ite_user', JSON.stringify(this.user));
       this.hideLoader();
-      this.toast('เชื่อมต่อไม่สำเร็จ: ' + e.message, 'err');
+      this.checkAuth();
+      this.toast(`ล็อกอินสำเร็จ ยินดีต้อนรับคุณ ${this.user.name}`, 'ok');
+    } catch (e) {
+      this.hideLoader();
+      this.toast(e.message, 'err');
     }
   },
 
-  copyGasCode() {
-    const code = document.getElementById('gas-code-block').innerText.replace(/^Copy\n/,'');
-    if (navigator.clipboard) {
-      navigator.clipboard.writeText(code).then(() => this.toast('คัดลอกโค้ดสำเร็จ ✓','ok'));
+  logout() {
+    localStorage.removeItem('ite_user');
+    this.user = null;
+    document.getElementById('user-menu').classList.remove('active');
+    this.showPage('login');
+  },
+
+  saveGAS() {
+    const url = document.getElementById('gas-url-input').value.trim();
+    if(!url) return;
+    GAS.save(url);
+    this.toast('บันทึกเส้นทางเชื่อมต่อเรียบร้อย', 'ok');
+  },
+
+  showPage(pageId, id=null) {
+    if(!this.user && pageId !== 'login') { pageId = 'login'; }
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    
+    const targetPage = document.getElementById('page-' + pageId);
+    if(targetPage) targetPage.classList.add('active');
+    
+    if(pageId === 'create') {
+      this.resetCreateForm();
     }
-  },
-
-  updateGasStatus(ok) {
-    const dot = document.getElementById('gas-dot');
-    const txt = document.getElementById('gas-status-txt');
-    if (ok) { dot.className='gas-dot ok'; txt.textContent='GAS เชื่อมต่อแล้ว'; }
-    else     { dot.className='gas-dot err'; txt.textContent='GAS มีปัญหา'; }
-    document.getElementById('btn-new-doc').style.display = ok ? '' : 'none';
-  },
-
-  // ── NAVIGATION ────────────────────────────────────────────
-  showPage(page, id=null) {
-    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-    document.getElementById('page-'+page).classList.add('active');
-    document.getElementById('setup-back-btn').style.display = GAS.isConfigured() ? '' : 'none';
-    if (page==='dashboard') this.renderDash();
-    else if (page==='create') this.resetCreate();
-    else if (page==='detail' && id) { this.curId=id; this.renderDetail(id); }
-    else if (page==='setup') {
-      const inp = document.getElementById('gas-url-input');
-      if (inp) inp.value = GAS.url;
+    if(pageId === 'detail' && id) {
+      this.curId = id;
+      this.renderDetail(id);
     }
     window.scrollTo(0,0);
   },
 
-  // ── SIGN LINK ─────────────────────────────────────────────
-  async handleSignLink(docId, role) {
-    this.fromSignLink = true;
-    document.getElementById('btn-new-doc').style.display = 'none';
-    this.showLoader('กำลังโหลดเอกสาร...');
+  // ================== FETCH DATA ==================
+  async loadDocs() {
+    if(!GAS.url) return;
+    this.showLoader('กำลังเรียกข้อมูลเอกสาร...');
     try {
-      const d = await GAS.get('getDoc', {id: docId});
-      if (!d.doc) { this.hideLoader(); this.toast('ไม่พบเอกสาร '+docId,'err'); this.showPage('setup'); return; }
-      // Merge into local docs
-      const idx = this.docs.findIndex(x=>x.id===docId);
-      if (idx>=0) this.docs[idx]=d.doc; else this.docs.push(d.doc);
-      this.curId = docId;
-      this.hideLoader();
-      this.showPage('detail', docId);
-      this.updateGasStatus(true);
-      document.getElementById('btn-new-doc').style.display = 'none';
+      const res = await GAS.get('getAll');
+      this.docs = res.docs || [];
+      this.renderDocs();
+    } catch(e) { this.toast('การเชื่อมต่อล้มเหลว', 'err'); }
+    finally { this.hideLoader(); }
+  },
 
-      // Validate turn
-      const expectedStatus = STEP_STATUS[role];
-      const doc = this.getDoc(docId);
-      if (doc.sigs[role]) { this.toast('ลงนามในช่องนี้ไปแล้ว ✓','info'); return; }
-      if (doc.status !== expectedStatus) { this.toast('ยังไม่ถึงลำดับการลงนามของท่าน','err'); return; }
+  async loadUsers() {
+    if(!GAS.url) return;
+    try {
+      const res = await GAS.get('getUsers');
+      this.usersDB = res.users || [];
+      this.renderUsersList();
+      this.populateHODDataList();
+    } catch(e) {}
+  },
 
-      // Show banner + auto-open sign modal
-      const banner = document.createElement('div');
-      banner.className = 'signlink-banner';
-      banner.innerHTML = `<div style="font-size:22px">🔗</div><div><h3>คำเชิญลงนาม — ${STEP_LABELS[role]}</h3><p>เอกสาร ${docId} | ตรวจสอบข้อมูลแล้วลงลายมือชื่อได้เลย</p></div>`;
-      document.getElementById('detail-content').prepend(banner);
-      setTimeout(()=>this.openSign(role, STEP_LABELS[role]), 500);
-    } catch(e) {
-      this.hideLoader();
-      this.toast('เกิดข้อผิดพลาด: '+e.message,'err');
+  // ================== RENDER METHODS ==================
+  renderDocs() {
+    const q = (document.getElementById('search-inp').value || '').toLowerCase();
+    let list = this.docs;
+    
+    // RBAC: ถ้าไม่ใช่ ADMIN ให้เห็นเฉพาะเอกสารที่ตัวเองเป็น HOD
+    if (this.user.role !== 'IT_ADMIN') {
+      list = list.filter(d => d.hod && d.hod.empId === this.user.empId);
     }
-  },
 
-  makeSignLink(docId, role) {
-    const base = window.location.href.split('#')[0];
-    return `${base}#sign=${encodeURIComponent(docId)}&role=${role}&gas=${encodeURIComponent(GAS.url)}`;
-  },
-
-  copySignLink(docId, role) {
-    const url = this.makeSignLink(docId, role);
-    if (navigator.clipboard) {
-      navigator.clipboard.writeText(url)
-        .then(()=>this.toast(`✓ Copy Link สำหรับ ${STEP_LABELS[role]} แล้ว`,'ok'))
-        .catch(()=>this.fallbackCopy(url));
-    } else this.fallbackCopy(url);
-  },
-
-  fallbackCopy(url) {
-    const ta=document.createElement('textarea'); ta.value=url;
-    ta.style.cssText='position:fixed;opacity:0'; document.body.appendChild(ta);
-    ta.focus(); ta.select();
-    try { document.execCommand('copy'); this.toast('✓ คัดลอก Link แล้ว','ok'); }
-    catch { this.toast('กรุณา copy URL ด้วยตัวเอง','err'); }
-    document.body.removeChild(ta);
-  },
-
-  // ── DASHBOARD ─────────────────────────────────────────────
-  renderDash() { this.renderStats(); this.filter(); },
-  renderStats() {
-    const d=this.docs;
-    const pend=d.filter(x=>['pending_it_officer','pending_it_manager','pending_recipient'].includes(x.status)).length;
-    document.getElementById('stats-row').innerHTML=`
-      <div class="stat all"><div class="stat-n">${d.length}</div><div class="stat-l">เอกสารทั้งหมด</div></div>
-      <div class="stat pend"><div class="stat-n">${pend}</div><div class="stat-l">รอดำเนินการ</div></div>
-      <div class="stat done"><div class="stat-n">${d.filter(x=>x.status==='completed').length}</div><div class="stat-l">ครบถ้วน</div></div>
-      <div class="stat ret"><div class="stat-n">${d.filter(x=>x.status==='returned').length}</div><div class="stat-l">คืนแล้ว</div></div>`;
-  },
-  filter() {
-    const q=(document.getElementById('search-inp')?.value||'').toLowerCase();
-    const s=document.getElementById('filter-status')?.value||'';
-    let list=[...this.docs];
-    if(q) list=list.filter(d=>d.id.toLowerCase().includes(q)||d.emp.name.toLowerCase().includes(q)||d.emp.empId.toLowerCase().includes(q)||d.emp.dept.toLowerCase().includes(q));
-    if(s) list=list.filter(d=>d.status===s);
-    list.sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
-    const tb=document.getElementById('doc-tbody');
-    if(!list.length){
-      tb.innerHTML=`<tr><td colspan="7"><div class="empty"><div class="empty-icon">📂</div><p>ไม่พบเอกสาร</p></div></td></tr>`;
-      return;
+    if(q) {
+      list = list.filter(d => d.id.toLowerCase().includes(q) || d.emp.name.toLowerCase().includes(q) || d.emp.dept.toLowerCase().includes(q));
     }
-    tb.innerHTML=list.map(d=>`
-      <tr class="click" onclick="App.showPage('detail','${d.id}')">
-        <td><span style="font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:12px">${d.id}</span></td>
-        <td style="color:var(--ink3);font-size:12px">${this.fmtDate(d.createdAt)}</td>
-        <td><div style="font-weight:600">${d.emp.name}</div><div style="font-size:11px;color:var(--ink3)">${d.emp.empId}</div></td>
+    
+    const tb = document.getElementById('doc-tbody');
+    tb.innerHTML = list.map(d => `
+      <tr class="click" onclick="App.showPage('detail', '${d.id}')">
+        <td><strong style="font-family:monospace; color:var(--primary);">${d.id}</strong></td>
+        <td>${new Date(d.createdAt).toLocaleDateString('th-TH')}</td>
+        <td><strong>${d.emp.name}</strong><br><span style="font-size:11px;color:var(--ink3)">รหัส: ${d.emp.empId}</span></td>
         <td>${d.emp.dept}</td>
-        <td><strong>${d.equipment.length}</strong> <span style="color:var(--ink3)">รายการ</span></td>
-        <td>${this.statusBadge(d.status)}</td>
-        <td><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();App.showPage('detail','${d.id}')">ดู →</button></td>
-      </tr>`).join('');
-  },
-  statusBadge(s){
-    const m={pending_it_officer:['badge-amber','⏳ รอ IT Officer'],pending_it_manager:['badge-blue','⏳ รอ IT Manager'],pending_recipient:['badge-purple','⏳ รอผู้รับ'],completed:['badge-green','✓ ครบถ้วน'],returned:['badge-gray','↩ คืนแล้ว']};
-    const[c,l]=m[s]||['badge-gray',s];
-    return`<span class="badge ${c}">${l}</span>`;
+        <td>${d.hod ? `${d.hod.name} (<span style="font-family:monospace">${d.hod.empId}</span>)` : '-'}</td>
+        <td><span class="badge badge-amber">${d.status}</span></td>
+        <td><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation(); App.showPage('detail', '${d.id}')">🔍 ดูเอกสาร</button></td>
+      </tr>
+    `).join('') || '<tr><td colspan="7" style="text-align:center; color:var(--ink3); padding:30px;">ไม่มีเอกสารให้แสดงผล</td></tr>';
   },
 
-  // ── CREATE ────────────────────────────────────────────────
-  resetCreate(){
-    ['c-name','c-empid','c-pos','c-dept','c-email','c-phone','c-note'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
-    this.rowCount=0; document.getElementById('equip-rows').innerHTML=''; this.addRow();
-  },
-  addRow(){
-    this.rowCount++;
-    const n=this.rowCount;
-    const tr=document.createElement('tr'); tr.id='er-'+n;
-    tr.innerHTML=`
-      <td style="text-align:center;color:var(--ink3);font-size:11px">${n}</td>
-      <td><input placeholder="Notebook, Monitor..." data-f="name"></td>
-      <td><input placeholder="Dell, HP..." data-f="brand"></td>
-      <td><input placeholder="รุ่น..." data-f="model"></td>
-      <td><input placeholder="S/N..." data-f="serial"></td>
-      <td><input placeholder="IT-XXX" data-f="asset"></td>
-      <td><select data-f="cond"><option>ดี</option><option>พอใช้</option><option>ชำรุด</option></select></td>
-      <td>${n>1?`<button class="btn btn-icon" style="background:var(--red-muted);color:var(--red);border:none" onclick="document.getElementById('er-${n}').remove()">✕</button>`:''}</td>`;
-    document.getElementById('equip-rows').appendChild(tr);
-  },
-  getEquipRows(){
-    const items=[];
-    document.querySelectorAll('#equip-rows tr').forEach(r=>{
-      const name=r.querySelector('[data-f="name"]')?.value.trim();
-      if(!name) return;
-      items.push({name,brand:r.querySelector('[data-f="brand"]')?.value.trim()||'',model:r.querySelector('[data-f="model"]')?.value.trim()||'',serial:r.querySelector('[data-f="serial"]')?.value.trim()||'',asset:r.querySelector('[data-f="asset"]')?.value.trim()||'',cond:r.querySelector('[data-f="cond"]')?.value||'ดี'});
-    });
-    return items;
-  },
-  genId(){
-    const y=new Date().getFullYear();
-    const seq=String(this.docs.length+1).padStart(4,'0');
-    return`IT-HO-${y}-${seq}`;
-  },
-  async createDoc(){
-    const name=document.getElementById('c-name').value.trim();
-    const empId=document.getElementById('c-empid').value.trim();
-    const pos=document.getElementById('c-pos').value.trim();
-    const dept=document.getElementById('c-dept').value.trim();
-    if(!name||!empId||!pos||!dept){this.toast('กรุณากรอกข้อมูลพนักงานให้ครบ','err');return;}
-    const equip=this.getEquipRows();
-    if(!equip.length){this.toast('กรุณาเพิ่มอุปกรณ์อย่างน้อย 1 รายการ','err');return;}
-    const doc={id:this.genId(),createdAt:new Date().toISOString(),status:'pending_it_officer',emp:{name,empId,pos,dept,email:document.getElementById('c-email').value.trim(),phone:document.getElementById('c-phone').value.trim()},equipment:equip,note:document.getElementById('c-note').value.trim(),sigs:{itOfficer:null,itManager:null,recipient:null},returnInfo:null};
-    this.showLoader('กำลังบันทึก...');
-    try {
-      await GAS.saveDoc(doc);
-      this.docs.push(doc);
-      this.hideLoader();
-      this.toast(`สร้างเอกสาร ${doc.id} สำเร็จ ✓`,'ok');
-      this.showPage('detail',doc.id);
-    } catch(e) {
-      this.hideLoader();
-      this.toast('บันทึกไม่สำเร็จ: '+e.message,'err');
-    }
-  },
+  renderDetail(id) {
+    const doc = this.docs.find(d => d.id === id);
+    if(!doc) return;
 
-  // ── DETAIL ────────────────────────────────────────────────
-  getDoc(id){return this.docs.find(d=>d.id===id);},
-
-  renderDetail(id){
-    const doc=this.getDoc(id); if(!doc) return;
-    document.getElementById('detail-bc').textContent=doc.id;
-    const stepOrder={pending_it_officer:0,pending_it_manager:1,pending_recipient:2,completed:3,returned:3};
-    const cur=stepOrder[doc.status]??3;
-    const steps=[{key:'itOfficer',label:'IT Officer'},{key:'itManager',label:'IT Manager'},{key:'recipient',label:'ผู้รับอุปกรณ์'}];
-    const stepper=`<div class="stepper">${steps.map((s,i)=>`
-      <div class="step-item ${i<cur?'done':i===cur&&cur<3?'cur':''}">
-        <div class="step-dot">${i<cur?'✓':i+1}</div>
-        <div class="step-lbl">${s.label}</div>
-      </div>`).join('')}</div>`;
-    const sigCards=steps.map((s,i)=>{
-      const sig=doc.sigs[s.key];
-      const isTurn=(i===cur&&cur<3);
-      return`<div class="sig-card${isTurn?' cur-turn':''}">
-        <div class="sig-head">
-          <div class="sig-head-name">${s.label}</div>
-          ${sig?`<span style="font-size:10px;font-weight:700;color:var(--green)">✓ ลงนามแล้ว</span>`:isTurn?`<span style="font-size:10px;font-weight:700;color:var(--primary)">● รอลงนาม</span>`:''}
-        </div>
-        <div class="sig-body">${sig?`<img src="${sig.sig}">`:'<div class="sig-placeholder">✍️</div>'}</div>
-        <div class="sig-foot">${sig?`<strong>${sig.name}</strong>${this.fmtDT(sig.at)}`:'<span style="color:var(--border2)">ยังไม่ได้ลงนาม</span>'}</div>
-        ${isTurn?`<div class="sig-action">
-          <button class="btn btn-primary" style="width:100%" onclick="App.openSign('${s.key}','${s.label}')">✍️ ลงลายมือชื่อ ${s.label}</button>
-          <button class="btn btn-copy" style="width:100%;font-size:12px" onclick="App.copySignLink('${doc.id}','${s.key}')">🔗 Copy Link ส่งให้ ${s.label} เซ็น</button>
-        </div>`:''}
-      </div>`;
-    }).join('');
-    let retSection='';
-    if(doc.status==='completed'){
-      retSection=`<div class="return-bar"><h4>↩ รับคืนอุปกรณ์</h4><p style="font-size:12px;color:var(--amber-text);margin-bottom:10px">เมื่อพนักงานลาออกหรือต้องการคืนอุปกรณ์</p><button class="btn btn-primary" onclick="App.openReturn('${doc.id}')">↩ บันทึกรับคืนอุปกรณ์</button></div>`;
-    } else if(doc.status==='returned'&&doc.returnInfo){
-      const ri=doc.returnInfo;
-      retSection=`<div class="returned-banner"><span style="font-size:22px">✅</span><div><div style="font-weight:700;color:var(--green-text);font-size:13px">รับคืนอุปกรณ์แล้ว</div><div style="font-size:12px;color:var(--ink2)">รับคืนโดย: <strong>${ri.itName}</strong> | ${this.fmtDT(ri.at)}${ri.note?` | ${ri.note}`:''}</div></div></div>${ri.sig?`<div style="margin-bottom:16px"><div class="sig-card" style="max-width:230px"><div class="sig-head"><div class="sig-head-name">ลายเซ็น IT รับคืน</div></div><div class="sig-body"><img src="${ri.sig}"></div><div class="sig-foot"><strong>${ri.itName}</strong>${this.fmtDT(ri.at)}</div></div></div>`:''}`;
-    }
-    const canDl=doc.status==='completed'||doc.status==='returned';
-    document.getElementById('detail-content').innerHTML=`
-      ${doc.status==='returned'?retSection:''}
+    const dc = document.getElementById('detail-content');
+    dc.innerHTML = `
       <div class="card">
-        <div class="doc-hd">
-          <div><div class="doc-id-big">${doc.id}</div><div class="doc-meta">วันที่สร้าง: ${this.fmtDT(doc.createdAt)}</div></div>
-          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-            ${this.statusBadge(doc.status)}
-            ${canDl?`<button class="btn btn-primary btn-sm" onclick="App.dlPDF('${doc.id}')">⬇️ PDF</button>`:''}
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; border-bottom:2px solid var(--border); padding-bottom:15px;">
+          <div>
+            <h2 style="font-family:monospace">${doc.id}</h2>
+            <p style="font-size:12px; color:var(--ink3)">สร้างเมื่อ: ${new Date(doc.createdAt).toLocaleString('th-TH')}</p>
           </div>
+          <button class="btn btn-green" onclick="App.printPDF('${doc.id}')">🖨️ พิมพ์แบบฟอร์ม PDF</button>
         </div>
-        <div class="sec-title"><span class="sec-icon">👤</span> ข้อมูลพนักงาน</div>
+
+        <div class="sec-title">👤 ข้อมูลผู้รับมอบเครื่อง</div>
         <div class="info-grid">
           <div class="info-item"><div class="lbl">ชื่อ-นามสกุล</div><div class="val">${doc.emp.name}</div></div>
           <div class="info-item"><div class="lbl">รหัสพนักงาน</div><div class="val">${doc.emp.empId}</div></div>
           <div class="info-item"><div class="lbl">ตำแหน่ง</div><div class="val">${doc.emp.pos}</div></div>
           <div class="info-item"><div class="lbl">แผนก</div><div class="val">${doc.emp.dept}</div></div>
-          ${doc.emp.email?`<div class="info-item"><div class="lbl">Email</div><div class="val">${doc.emp.email}</div></div>`:''}
-          ${doc.emp.phone?`<div class="info-item"><div class="lbl">เบอร์โทร</div><div class="val">${doc.emp.phone}</div></div>`:''}
+          <div class="info-item full" style="margin-top:5px"><div class="lbl">หัวหน้างานผู้อนุมัติ (HOD)</div><div class="val" style="color:var(--primary)">${doc.hod ? `${doc.hod.name} (${doc.hod.empId})` : '-'}</div></div>
         </div>
-        <hr class="div">
-        <div class="sec-title"><span class="sec-icon">🖥️</span> รายการอุปกรณ์</div>
-        <div class="tbl-wrap"><table>
-          <thead><tr><th>#</th><th>ชื่ออุปกรณ์</th><th>ยี่ห้อ</th><th>รุ่น</th><th>Serial No.</th><th>Asset Tag</th><th>สภาพ</th></tr></thead>
-          <tbody>${doc.equipment.map((e,i)=>`<tr>
-            <td style="color:var(--ink3);font-size:12px">${i+1}</td>
-            <td><strong>${e.name}</strong></td><td>${e.brand||'-'}</td><td>${e.model||'-'}</td>
-            <td style="font-family:'IBM Plex Mono',monospace;font-size:12px">${e.serial||'-'}</td>
-            <td style="font-family:'IBM Plex Mono',monospace;font-size:12px">${e.asset||'-'}</td>
-            <td>${this.condBadge(e.cond)}</td>
-          </tr>`).join('')}</tbody>
-        </table></div>
-        ${doc.note?`<div style="margin-top:12px;padding:11px 14px;background:var(--surface);border-radius:var(--r);font-size:13px;color:var(--ink2)"><strong>หมายเหตุ:</strong> ${doc.note}</div>`:''}
-        <hr class="div">
-        <div class="sec-title"><span class="sec-icon">✍️</span> ลายมือชื่อ</div>
-        ${stepper}
-        <div class="sig-grid">${sigCards}</div>
-        ${doc.status==='completed'?retSection:''}
-        ${doc.status==='returned'&&doc.returnInfo?`<hr class="div"><div class="sec-title" style="color:var(--green-text)"><span class="sec-icon" style="background:var(--green-muted);color:var(--green)">↩</span> ข้อมูลการรับคืน</div><div class="info-grid"><div class="info-item"><div class="lbl">รับคืนโดย</div><div class="val">${doc.returnInfo.itName}</div></div><div class="info-item"><div class="lbl">วันที่รับคืน</div><div class="val">${this.fmtDT(doc.returnInfo.at)}</div></div>${doc.returnInfo.note?`<div class="info-item full"><div class="lbl">หมายเหตุ</div><div class="val">${doc.returnInfo.note}</div></div>`:''}</div>`:''}
-        <div class="action-bar">
-          <button class="btn btn-ghost" onclick="App.showPage('dashboard')">← กลับ</button>
-          ${canDl?`<button class="btn btn-primary" onclick="App.dlPDF('${doc.id}')">⬇️ ดาวน์โหลด PDF</button>`:''}
-        </div>
-      </div>`;
-  },
-  condBadge(c){
-    if(c==='ดี') return`<span class="badge badge-green">✓ ดี</span>`;
-    if(c==='พอใช้') return`<span class="badge badge-amber">~ พอใช้</span>`;
-    return`<span class="badge badge-gray">✕ ชำรุด</span>`;
-  },
 
-  // ── SIGNING ───────────────────────────────────────────────
-  openSign(key,label){
-    this.signTarget={key,label}; this.uploadedSig=null;
-    document.getElementById('sign-title').textContent=`ลงลายมือชื่อ — ${label}`;
-    document.getElementById('sign-name-lbl').textContent=`ชื่อ-นามสกุล ${label} *`;
-    document.getElementById('sign-name').value='';
-    document.getElementById('upload-preview-wrap').style.display='none';
-    document.getElementById('sig-file').value='';
-    this.switchTab('draw');
-    document.getElementById('modal-sign').style.display='flex';
-    setTimeout(()=>this.initCvs('sign-canvas','signCvs'),120);
-  },
-  closeSign(){document.getElementById('modal-sign').style.display='none';},
-
-  switchTab(tab){
-    this.signTab=tab;
-    ['draw','upload'].forEach(t=>{
-      document.getElementById('tab-'+t).classList.toggle('active',t===tab);
-      document.getElementById('tab-'+t+'-btn').classList.toggle('active',t===tab);
-    });
-  },
-  switchRetTab(tab){
-    this.retTab=tab;
-    ['draw','upload'].forEach(t=>{
-      document.getElementById('ret-tab-'+t).classList.toggle('active',t===tab);
-      document.getElementById('ret-tab-'+t+'-btn').classList.toggle('active',t===tab);
-    });
-  },
-
-  handleUpload(e){
-    const file=e.target.files[0]; if(!file) return;
-    if(file.size>2*1024*1024){this.toast('ไฟล์ใหญ่เกิน 2MB','err');return;}
-    new FileReader().onload=ev=>{
-      this.uploadedSig=ev.target.result;
-      document.getElementById('upload-preview').src=ev.target.result;
-      document.getElementById('upload-preview-wrap').style.display='block';
-    };
-    const fr=new FileReader(); fr.onload=ev=>{this.uploadedSig=ev.target.result;document.getElementById('upload-preview').src=ev.target.result;document.getElementById('upload-preview-wrap').style.display='block';};
-    fr.readAsDataURL(file);
-  },
-  clearUpload(){this.uploadedSig=null;document.getElementById('upload-preview-wrap').style.display='none';document.getElementById('sig-file').value='';},
-  handleRetUpload(e){
-    const file=e.target.files[0]; if(!file) return;
-    const fr=new FileReader(); fr.onload=ev=>{this.retUploadedSig=ev.target.result;document.getElementById('ret-upload-preview').src=ev.target.result;document.getElementById('ret-preview-wrap').style.display='block';};
-    fr.readAsDataURL(file);
-  },
-  clearRetUpload(){this.retUploadedSig=null;document.getElementById('ret-preview-wrap').style.display='none';document.getElementById('ret-sig-file').value='';},
-
-  initCvs(id,stateKey){
-    const canvas=document.getElementById(id); if(!canvas) return;
-    const nc=canvas.cloneNode(false); canvas.parentNode.replaceChild(nc,canvas);
-    nc.width=nc.offsetWidth||460; nc.height=nc.offsetHeight||180;
-    const ctx=nc.getContext('2d');
-    ctx.fillStyle='#fff'; ctx.fillRect(0,0,nc.width,nc.height);
-    ctx.strokeStyle='#0f1117'; ctx.lineWidth=2.5; ctx.lineCap='round'; ctx.lineJoin='round';
-    let drawing=false;
-    const pos=e=>{const r=nc.getBoundingClientRect();const sx=nc.width/r.width,sy=nc.height/r.height;const s=e.touches?e.touches[0]:e;return{x:(s.clientX-r.left)*sx,y:(s.clientY-r.top)*sy};};
-    nc.addEventListener('mousedown',e=>{drawing=true;const p=pos(e);ctx.beginPath();ctx.moveTo(p.x,p.y);});
-    nc.addEventListener('mousemove',e=>{if(!drawing)return;const p=pos(e);ctx.lineTo(p.x,p.y);ctx.stroke();});
-    nc.addEventListener('mouseup',()=>drawing=false); nc.addEventListener('mouseleave',()=>drawing=false);
-    nc.addEventListener('touchstart',e=>{e.preventDefault();drawing=true;const p=pos(e);ctx.beginPath();ctx.moveTo(p.x,p.y);},{passive:false});
-    nc.addEventListener('touchmove',e=>{e.preventDefault();if(!drawing)return;const p=pos(e);ctx.lineTo(p.x,p.y);ctx.stroke();},{passive:false});
-    nc.addEventListener('touchend',()=>drawing=false);
-    this[stateKey]={canvas:nc,ctx};
-  },
-  isBlank(canvas){
-    const b=document.createElement('canvas'); b.width=canvas.width; b.height=canvas.height;
-    const bc=b.getContext('2d'); bc.fillStyle='#fff'; bc.fillRect(0,0,b.width,b.height);
-    return canvas.toDataURL()===b.toDataURL();
-  },
-  clearSign(){if(!this.signCvs)return;const{canvas,ctx}=this.signCvs;ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height);},
-
-  async confirmSign(){
-    const name=document.getElementById('sign-name').value.trim();
-    if(!name){this.toast('กรุณาระบุชื่อผู้ลงนาม','err');return;}
-    let sigData;
-    if(this.signTab==='draw'){
-      const canvas=document.getElementById('sign-canvas');
-      if(this.isBlank(canvas)){this.toast('กรุณาวาดลายมือชื่อ','err');return;}
-      sigData=canvas.toDataURL('image/jpeg',.85);
-    } else {
-      if(!this.uploadedSig){this.toast('กรุณาอัปโหลดรูปลายเซ็น','err');return;}
-      sigData=this.uploadedSig;
-    }
-    const{key}=this.signTarget;
-    const doc=this.getDoc(this.curId);
-    doc.sigs[key]={name,sig:sigData,at:new Date().toISOString()};
-    if(key==='itOfficer') doc.status='pending_it_manager';
-    else if(key==='itManager') doc.status='pending_recipient';
-    else if(key==='recipient') doc.status='completed';
-    const btn=document.getElementById('btn-confirm-sign'); btn.disabled=true; btn.textContent='⏳ กำลังบันทึก...';
-    try {
-      await GAS.saveDoc(doc);
-      this.closeSign();
-      this.renderDetail(this.curId);
-      this.toast('ลงนามและบันทึกสำเร็จ ✓','ok');
-      if(doc.status==='completed') this.toast('เอกสารครบถ้วน — พร้อมดาวน์โหลด PDF','info');
-    } catch(e) {
-      this.toast('บันทึกไม่สำเร็จ: '+e.message,'err');
-    } finally {
-      btn.disabled=false; btn.textContent='✓ ยืนยันลงนาม';
-    }
-  },
-
-  // ── RETURN ────────────────────────────────────────────────
-  openReturn(id){
-    const doc=this.getDoc(id); this.retUploadedSig=null;
-    document.getElementById('ret-name').value='';
-    document.getElementById('ret-note').value='';
-    document.getElementById('ret-preview-wrap').style.display='none';
-    document.getElementById('ret-sig-file').value='';
-    this.switchRetTab('draw');
-    const html=doc.equipment.map(e=>`<div class="ret-equip-item"><span style="color:var(--green)">✓</span><strong>${e.name}</strong>${e.brand||e.model?`<span style="color:var(--ink3);font-size:12px">${[e.brand,e.model].filter(Boolean).join(' ')}</span>`:''}${e.serial?`<span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--ink3)">S/N: ${e.serial}</span>`:''}</div>`).join('');
-    document.getElementById('ret-equip-list').innerHTML=`<div style="font-size:11px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">รายการอุปกรณ์ที่รับคืน</div>${html}`;
-    document.getElementById('modal-return').style.display='flex';
-    setTimeout(()=>this.initCvs('ret-canvas','retCvs'),120);
-  },
-  clearRet(){if(!this.retCvs)return;const{canvas,ctx}=this.retCvs;ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height);},
-
-  async confirmReturn(){
-    const itName=document.getElementById('ret-name').value.trim();
-    if(!itName){this.toast('กรุณาระบุชื่อ IT ผู้รับคืน','err');return;}
-    let sig=null;
-    if(this.retTab==='draw'){
-      const canvas=document.getElementById('ret-canvas');
-      if(!this.isBlank(canvas)) sig=canvas.toDataURL('image/jpeg',.85);
-    } else sig=this.retUploadedSig||null;
-    const doc=this.getDoc(this.curId);
-    doc.returnInfo={itName,sig,note:document.getElementById('ret-note').value.trim(),at:new Date().toISOString()};
-    doc.status='returned';
-    const btn=document.getElementById('btn-confirm-return'); btn.disabled=true; btn.textContent='⏳ กำลังบันทึก...';
-    try {
-      await GAS.saveDoc(doc);
-      document.getElementById('modal-return').style.display='none';
-      this.renderDetail(this.curId);
-      this.renderStats();
-      this.toast('บันทึกการรับคืนสำเร็จ ✓','ok');
-    } catch(e) {
-      this.toast('บันทึกไม่สำเร็จ: '+e.message,'err');
-    } finally {
-      btn.disabled=false; btn.textContent='✓ ยืนยันรับคืน';
-    }
-  },
-
-  // ── PDF (Print Window) ─────────────────────────────────────
-  dlPDF(id){
-    const doc=this.getDoc(id);
-    const html=this.buildPDFPage(doc);
-    const blob=new Blob([html],{type:'text/html;charset=utf-8'});
-    const url=URL.createObjectURL(blob);
-    const w=window.open(url,'_blank');
-    if(!w){this.toast('โปรดอนุญาต Pop-up แล้วลองใหม่','err');return;}
-    setTimeout(()=>URL.revokeObjectURL(url),30000);
-    this.toast('กด Ctrl+P (⌘P) เพื่อบันทึกเป็น PDF','info');
-  },
-  buildPDFPage(doc){
-    const sb=(sig,lbl)=>`<div style="border:1px solid #d1d5db;border-radius:6px;overflow:hidden;flex:1;min-width:140px">
-      <div style="background:#f3f4f6;padding:8px 12px;font-size:11px;font-weight:700;border-bottom:1px solid #e5e7eb">${lbl}</div>
-      <div style="min-height:90px;display:flex;align-items:center;justify-content:center;padding:8px;background:#fafbfd">${sig?`<img src="${sig.sig}" style="max-height:80px;max-width:100%">`:'<span style="color:#d1d5db;font-size:24px">✍️</span>'}</div>
-      <div style="padding:7px 12px;font-size:11px;color:#6b7280;border-top:1px solid #f3f4f6;min-height:38px">${sig?`<div style="font-weight:700;color:#111;margin-bottom:2px">${sig.name}</div><div>${this.fmtDT(sig.at)}</div>`:'ยังไม่ได้ลงนาม'}</div>
-    </div>`;
-    const ri=doc.returnInfo;
-    const body=`<div style="font-family:Arial,sans-serif;font-size:13px;color:#111;max-width:760px;margin:0 auto;padding:36px 28px">
-      <div style="border-bottom:3px solid #2563eb;padding-bottom:14px;margin-bottom:18px;display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:8px">
-        <div><div style="font-size:19px;font-weight:700;color:#1d4ed8">เอกสารส่งมอบ-รับมอบอุปกรณ์คอมพิวเตอร์</div><div style="font-size:12px;color:#6b7280;margin-top:2px">IT Equipment Handover Document</div></div>
-        <div style="text-align:right"><div style="font-family:monospace;font-size:14px;font-weight:700">${doc.id}</div><div style="font-size:11px;color:#6b7280">${this.fmtDate(doc.createdAt)}</div></div>
-      </div>
-      <div style="border:1px solid #e5e7eb;border-radius:8px;padding:14px;margin-bottom:14px">
-        <div style="font-weight:700;font-size:11px;color:#2563eb;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">ข้อมูลพนักงาน</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:13px">
-          <div><span style="color:#9ca3af">ชื่อ-นามสกุล: </span><strong>${doc.emp.name}</strong></div>
-          <div><span style="color:#9ca3af">รหัสพนักงาน: </span><strong style="font-family:monospace">${doc.emp.empId}</strong></div>
-          <div><span style="color:#9ca3af">ตำแหน่ง: </span>${doc.emp.pos}</div>
-          <div><span style="color:#9ca3af">แผนก: </span>${doc.emp.dept}</div>
-          ${doc.emp.email?`<div><span style="color:#9ca3af">Email: </span>${doc.emp.email}</div>`:''}
-          ${doc.emp.phone?`<div><span style="color:#9ca3af">เบอร์โทร: </span>${doc.emp.phone}</div>`:''}
-        </div>
-      </div>
-      <div style="margin-bottom:14px">
-        <div style="font-weight:700;font-size:11px;color:#2563eb;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">รายการอุปกรณ์</div>
-        <table style="width:100%;border-collapse:collapse;font-size:12px">
-          <thead><tr style="background:#2563eb;color:#fff">${['#','ชื่ออุปกรณ์','ยี่ห้อ','รุ่น','Serial No.','Asset Tag','สภาพ'].map(h=>`<th style="padding:7px 10px;text-align:left">${h}</th>`).join('')}</tr></thead>
-          <tbody>${doc.equipment.map((e,i)=>`<tr style="background:${i%2?'#f9fafb':'#fff'}">
-            <td style="padding:7px 10px;border-bottom:1px solid #f3f4f6">${i+1}</td>
-            <td style="padding:7px 10px;border-bottom:1px solid #f3f4f6;font-weight:600">${e.name}</td>
-            <td style="padding:7px 10px;border-bottom:1px solid #f3f4f6">${e.brand||'-'}</td>
-            <td style="padding:7px 10px;border-bottom:1px solid #f3f4f6">${e.model||'-'}</td>
-            <td style="padding:7px 10px;border-bottom:1px solid #f3f4f6;font-family:monospace">${e.serial||'-'}</td>
-            <td style="padding:7px 10px;border-bottom:1px solid #f3f4f6;font-family:monospace">${e.asset||'-'}</td>
-            <td style="padding:7px 10px;border-bottom:1px solid #f3f4f6">${e.cond||'-'}</td>
-          </tr>`).join('')}</tbody>
+        <div class="sec-title" style="margin-top:20px">🖥️ รายการอุปกรณ์คอมพิวเตอร์</div>
+        <table style="width:100%; margin-bottom:15px;">
+          <thead><tr><th>ชื่ออุปกรณ์</th><th>Serial Number</th><th>Asset Tag</th></tr></thead>
+          <tbody>
+            ${doc.equipment.map(e => `<tr><td><strong>${e.name}</strong></td><td style="font-family:monospace">${e.serial||'-'}</td><td style="font-family:monospace">${e.asset||'-'}</td></tr>`).join('')}
+          </tbody>
         </table>
       </div>
-      ${doc.note?`<div style="margin-bottom:12px;padding:10px 14px;background:#f9fafb;border-radius:6px;font-size:12px;border-left:3px solid #2563eb"><strong>หมายเหตุ:</strong> ${doc.note}</div>`:''}
-      <div style="margin-bottom:14px">
-        <div style="font-weight:700;font-size:11px;color:#2563eb;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">ลายมือชื่อ</div>
-        <div style="display:flex;gap:12px">${sb(doc.sigs.itOfficer,'IT Officer')}${sb(doc.sigs.itManager,'IT Manager')}${sb(doc.sigs.recipient,'ผู้รับอุปกรณ์')}</div>
+    `;
+  },
+
+  // ================== FORM LOGIC (CREATE DOC) ==================
+  resetCreateForm() {
+    ['c-name', 'c-empid', 'c-pos', 'c-dept', 'c-hod'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('equip-rows').innerHTML = '';
+    this.addEquipRow();
+  },
+
+  addEquipRow() {
+    this.equipCount++;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><input class="eq-inp" data-f="name" placeholder="เช่น Notebook, Monitor" style="width:100%"></td>
+      <td><input class="eq-inp" data-f="brand" placeholder="ยี่ห้อ..." style="width:100%"></td>
+      <td><input class="eq-inp" data-f="model" placeholder="รุ่น..." style="width:100%"></td>
+      <td><input class="eq-inp" data-f="serial" placeholder="S/N..." style="width:100%"></td>
+      <td><input class="eq-inp" data-f="asset" placeholder="เลข Asset..." style="width:100%"></td>
+      <td><button class="btn btn-sm" style="color:var(--red)" onclick="this.closest('tr').remove()">✕</button></td>
+    `;
+    document.getElementById('equip-rows').appendChild(tr);
+  },
+
+  populateHODDataList() {
+    const dl = document.getElementById('hod-list');
+    dl.innerHTML = this.usersDB.map(u => `<option value="${u.empId} - ${u.name}">`).join('');
+  },
+
+  async createDoc() {
+    const hodVal = document.getElementById('c-hod').value.trim();
+    const parts = hodVal.split(' - ');
+    const hodEmpId = parts[0] ? parts[0].trim() : '';
+    const hodName = parts[1] ? parts[1].trim() : hodVal;
+
+    const doc = {
+      id: 'IT-HO-' + new Date().getFullYear() + '-' + String(this.docs.length + 1).padStart(4, '0'),
+      createdAt: new Date().toISOString(),
+      status: 'รอส่งมอบอุปกรณ์',
+      emp: {
+        name: document.getElementById('c-name').value.trim(),
+        empId: document.getElementById('c-empid').value.trim(),
+        pos: document.getElementById('c-pos').value.trim(),
+        dept: document.getElementById('c-dept').value.trim()
+      },
+      hod: { empId: hodEmpId, name: hodName },
+      equipment: []
+    };
+
+    document.querySelectorAll('#equip-rows tr').forEach(tr => {
+      const name = tr.querySelector('[data-f="name"]').value.trim();
+      if(name) doc.equipment.push({
+        name,
+        brand: tr.querySelector('[data-f="brand"]').value.trim(),
+        model: tr.querySelector('[data-f="model"]').value.trim(),
+        serial: tr.querySelector('[data-f="serial"]').value.trim(),
+        asset: tr.querySelector('[data-f="asset"]').value.trim()
+      });
+    });
+
+    if(!doc.emp.name || !doc.emp.empId || !doc.hod.empId || doc.equipment.length === 0) {
+      this.toast('กรุณากรอกข้อมูลและเลือก HOD / อุปกรณ์ให้ครบถ้วน', 'err'); return;
+    }
+
+    this.showLoader('กำลังบันทึกเอกสารลงระบบ...');
+    try {
+      await GAS.post({action:'saveDoc', doc});
+      this.toast('บันทึกใบส่งมอบสำเร็จ ✓', 'ok');
+      await this.loadDocs();
+      this.showPage('dashboard');
+    } catch(e) { this.toast('บันทึกไม่สำเร็จ', 'err'); }
+    finally { this.hideLoader(); }
+  },
+
+  // ================== MANAGEMENT USERS ==================
+  renderUsersList() {
+    const tb = document.getElementById('user-tbody');
+    tb.innerHTML = this.usersDB.map(u => `
+      <tr>
+        <td><strong style="font-family:monospace">${u.empId}</strong></td>
+        <td>${u.name}</td>
+        <td><span class="badge ${u.role==='IT_ADMIN'?'badge-amber':'badge-gray'}">${u.role}</span></td>
+        <td>
+          <button class="btn btn-ghost btn-sm" onclick="App.openUserModal('${u.empId}')">✏️ แก้ไข/รหัสผ่าน</button>
+          ${u.empId !== 'admin' ? `<button class="btn btn-danger btn-sm" onclick="App.deleteUser('${u.empId}')">✕ ลบ</button>` : ''}
+        </td>
+      </tr>
+    `).join('');
+  },
+
+  openUserModal(empId = null) {
+    document.getElementById('u-pass-wrap').style.display = empId ? 'flex' : 'none';
+    if(empId) {
+      const u = this.usersDB.find(x => x.empId === empId);
+      document.getElementById('u-modal-title').textContent = 'แก้ไขข้อมูลผู้ใช้งาน';
+      document.getElementById('u-empid').value = u.empId;
+      document.getElementById('u-empid').readOnly = true;
+      document.getElementById('u-name-inp').value = u.name;
+      document.getElementById('u-role-inp').value = u.role;
+      document.getElementById('u-pass').value = '';
+    } else {
+      document.getElementById('u-modal-title').textContent = 'เพิ่มพนักงาน / HOD ใหม่';
+      document.getElementById('u-empid').value = '';
+      document.getElementById('u-empid').readOnly = false;
+      document.getElementById('u-name-inp').value = '';
+      document.getElementById('u-role-inp').value = 'USER';
+    }
+    document.getElementById('modal-user').style.display = 'flex';
+  },
+
+  async saveUser() {
+    const user = {
+      empId: document.getElementById('u-empid').value.trim(),
+      name: document.getElementById('u-name-inp').value.trim(),
+      role: document.getElementById('u-role-inp').value,
+      pass: document.getElementById('u-pass').value.trim() || undefined
+    };
+    if(!user.empId || !user.name) { this.toast('กรุณากรอกช่องข้อมูลดอกจันให้ครบ', 'err'); return; }
+
+    this.showLoader('กำลังบันทึกข้อมูล...');
+    try {
+      const res = await GAS.post({action:'saveUser', user});
+      if(res.error) throw new Error(res.error);
+      this.toast('บันทึกผู้ใช้สำเร็จ', 'ok');
+      document.getElementById('modal-user').style.display = 'none';
+      await this.loadUsers();
+    } catch(e) { this.toast(e.message, 'err'); }
+    finally { this.hideLoader(); }
+  },
+
+  async deleteUser(empId) {
+    if(!confirm(`คุณแน่ใจสิทธิ์ที่จะลบผู้ใช้งาน ${empId} หรือไม่?`)) return;
+    this.showLoader('กำลังลบข้อมูลออกจากฐานข้อมูล...');
+    try {
+      await GAS.post({action:'deleteUser', empId});
+      this.toast('ลบพนักงานสำเร็จ', 'ok');
+      await this.loadUsers();
+    } catch(e) { this.toast(e.message, 'err'); }
+    finally { this.hideLoader(); }
+  },
+
+  // ================== PDF PRINTING (IMAGE BACKGROUND) ==================
+  printPDF(id) {
+    const doc = this.docs.find(d => d.id === id);
+    if(!doc) return;
+
+    // ชื่อไฟล์รูปภาพแบบฟอร์มว่างๆ ที่คุณเซฟไว้ในโฟลเดอร์เดียวกัน
+    const bgImageUrl = 'bg-template.jpg'; 
+
+    const html = `
+    <!DOCTYPE html>
+    <html lang="th">
+    <head>
+      <meta charset="UTF-8">
+      <title>${doc.id} - FM-GLS-02</title>
+      <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600&display=swap" rel="stylesheet">
+      <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Sarabun', sans-serif; background: #525659; display: flex; justify-content: center; padding: 20px; }
+        
+        .page {
+          position: relative;
+          width: 210mm;
+          height: 297mm;
+          background-image: url('${bgImageUrl}');
+          background-size: 210mm 297mm;
+          background-repeat: no-repeat;
+          background-color: white;
+          box-shadow: 0 0 10px rgba(0,0,0,0.5);
+          overflow: hidden;
+        }
+
+        .txt {
+          position: absolute;
+          font-size: 14px;
+          color: #1d4ed8; /* สีน้ำเงินจำลองปากกา/หมึกพิมพ์ */
+          white-space: nowrap;
+        }
+
+        .check-mark {
+          position: absolute;
+          font-size: 18px;
+          color: #1d4ed8;
+          font-weight: bold;
+        }
+
+        @media print {
+          body { background: none; padding: 0; display: block; }
+          .page { box-shadow: none; margin: 0; }
+          * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+          @page { size: A4; margin: 0; }
+        }
+      </style>
+    </head>
+    <body>
+      <div class="page">
+        <div class="txt" style="top: 65mm; left: 45mm;">${doc.emp.name}</div>
+        <div class="txt" style="top: 65mm; left: 145mm;">${new Date(doc.createdAt).toLocaleDateString('th-TH')}</div>
+        <div class="txt" style="top: 72mm; left: 45mm;">สมิติเวช ศรีนครินทร์</div>
+        <div class="txt" style="top: 72mm; left: 145mm;">${doc.emp.dept}</div>
+        <div class="txt" style="top: 79mm; left: 45mm;">${doc.emp.empId}</div>
+        <div class="txt" style="top: 79mm; left: 145mm;">${doc.hod ? doc.hod.name : '-'}</div>
+
+        <div class="check-mark" style="top: 105mm; left: 20mm;">✔</div> 
+
+        ${doc.equipment.map((e, i) => {
+          const rowTop = 140 + (i * 7); // เริ่มต้นที่ 140mm และบวกบรรทัดละ 7mm
+          return \`
+            <div class="txt" style="top: \${rowTop}mm; left: 20mm;">\${e.name}</div>
+            <div class="txt" style="top: \${rowTop}mm; left: 55mm;">\${e.brand || '-'}</div>
+            <div class="txt" style="top: \${rowTop}mm; left: 85mm;">\${e.model || '-'}</div>
+            <div class="txt" style="top: \${rowTop}mm; left: 115mm; font-family: monospace;">\${e.serial || '-'}</div>
+            <div class="txt" style="top: \${rowTop}mm; left: 155mm; text-align: center; width: 15mm;">1</div>
+            <div class="txt" style="top: \${rowTop}mm; left: 175mm;">\${e.asset || '-'}</div>
+          \`;
+        }).join('')}
+
+        <div class="txt" style="top: 245mm; left: 35mm; width: 40mm; text-align: center;">( ${doc.emp.name} )</div>
       </div>
-      ${doc.status==='returned'&&ri?`<div style="border:2px solid #059669;border-radius:8px;padding:14px;background:#ecfdf5;margin-bottom:12px">
-        <div style="font-weight:700;color:#065f46;margin-bottom:8px;font-size:13px">↩ การรับคืนอุปกรณ์</div>
-        <div style="display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap">
-          <div style="flex:1;font-size:12px">
-            <div style="margin-bottom:3px"><span style="color:#6b7280">รับคืนโดย: </span><strong>${ri.itName}</strong></div>
-            <div style="margin-bottom:3px"><span style="color:#6b7280">วันที่: </span>${this.fmtDT(ri.at)}</div>
-            ${ri.note?`<div><span style="color:#6b7280">หมายเหตุ: </span>${ri.note}</div>`:''}
-          </div>
-          ${ri.sig?`<div style="border:1px solid #6ee7b7;border-radius:6px;overflow:hidden;min-width:130px">
-            <div style="padding:5px 10px;font-size:11px;font-weight:700;background:#a7f3d0;border-bottom:1px solid #6ee7b7;color:#065f46">ลายเซ็น IT รับคืน</div>
-            <div style="padding:8px;text-align:center;background:#fff"><img src="${ri.sig}" style="max-height:55px;max-width:120px"></div>
-          </div>`:''}
-        </div>
-      </div>`:''}
-      <div style="margin-top:20px;text-align:center;font-size:10px;color:#9ca3af;border-top:1px solid #e5e7eb;padding-top:10px">
-        เอกสารออกโดยระบบ IT Equipment Manager | พิมพ์เมื่อ ${this.fmtDT(new Date().toISOString())}
-      </div>
-    </div>`;
-    return`<!DOCTYPE html><html lang="th"><head><meta charset="UTF-8"><title>${doc.id}</title>
-    <style>*{box-sizing:border-box;margin:0;padding:0}body{background:#fff}@media print{body{padding:0}@page{margin:12mm;size:A4}}</style>
-    </head><body>${body}<script>window.addEventListener('load',()=>setTimeout(()=>window.print(),600))<\/script></body></html>`;
+      
+      <script>
+        // รอให้ภาพพื้นหลังโหลดเสร็จก่อนค่อยเปิดหน้าพิมพ์
+        window.addEventListener('load', () => setTimeout(() => window.print(), 800));
+      <\/script>
+    </body>
+    </html>`;
+
+    const blob = new Blob([html], {type:'text/html;charset=utf-8'});
+    const url = URL.createObjectURL(blob);
+    window.open(url, '_blank');
   },
 
-  // ── LOADER & TOAST ────────────────────────────────────────
-  showLoader(msg='กำลังโหลด...'){
-    document.getElementById('loading-text').textContent=msg;
-    document.getElementById('loading-overlay').classList.add('show');
-  },
-  hideLoader(){ document.getElementById('loading-overlay').classList.remove('show'); },
-
-  toast(msg,type='ok'){
-    const c=document.getElementById('toasts');
-    const t=document.createElement('div'); t.className=`toast toast-${type}`; t.textContent=msg;
-    c.appendChild(t);
-    setTimeout(()=>{t.style.opacity='0';t.style.transition='opacity .3s';setTimeout(()=>t.remove(),300);},4000);
-  },
-
-  // ── UTILS ─────────────────────────────────────────────────
-  fmtDate(iso){if(!iso)return'-';return new Date(iso).toLocaleDateString('th-TH',{year:'numeric',month:'long',day:'numeric'});},
-  fmtDT(iso){if(!iso)return'-';return new Date(iso).toLocaleString('th-TH',{year:'numeric',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});}
+  // ================== UTILS ==================
+  showLoader(m) { document.getElementById('loading-text').textContent=m; document.getElementById('loading-overlay').classList.add('show'); },
+  hideLoader() { document.getElementById('loading-overlay').classList.remove('show'); },
+  toast(msg, type='ok') {
+    const c=document.getElementById('toasts'); const t=document.createElement('div');
+    t.className=`toast toast-${type}`; t.textContent=msg; c.appendChild(t);
+    setTimeout(()=>t.remove(), 4000);
+  }
 };
 
 document.addEventListener('DOMContentLoaded', () => App.init());
