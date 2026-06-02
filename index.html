@@ -176,7 +176,7 @@ canvas{display:block;width:100%;cursor:crosshair;touch-action:none}
 .tfl-item.placed .tfl-dot{background:var(--grn)}
 
 /* CENTER: canvas */
-.tfc{flex:1;overflow:auto;background:#555;display:flex;align-items:flex-start;justify-content:center;padding:14px;position:relative}
+.tfc{flex:1;overflow:auto;background:#555;display:flex;align-items:flex-start;justify-content:flex-start;padding:16px;position:relative}
 .tfc-wrap{position:relative;display:inline-block;box-shadow:0 4px 24px rgba(0,0,0,.5);line-height:0;cursor:default}
 .tfc-wrap img{display:block;pointer-events:none;user-select:none;-webkit-user-drag:none}
 /* Connection wires SVG */
@@ -232,6 +232,7 @@ body.wiring{cursor:crosshair}
     <div style="font-size:10px;color:var(--ink3)" id="dd-r">-</div>
   </div>
   <div class="sbi" onclick="A.openCPW()">&#128273; เปลี่ยนรหัสผ่าน</div>
+  <div class="sbi" id="dd-gas-btn" style="display:none" onclick="A.showPg('setup');document.getElementById('udd').style.display='none'">&#9881; GAS Config (Admin)</div>
   <div class="sbi" style="color:var(--red)" onclick="A.logout()">&#128682; ออกจากระบบ</div>
 </div>
 
@@ -281,8 +282,8 @@ body.wiring{cursor:crosshair}
       <div class="sbs" id="sb-adm-sec" style="display:none">Admin</div>
       <div class="sbi" id="sb-users" onclick="A.sub('users')" style="display:none">&#128101; จัดการผู้ใช้</div>
       <div class="sbi" id="sb-tpl" onclick="A.sub('tpl')" style="display:none">&#128506; Template Designer</div>
-      <div class="sbs">ระบบ</div>
-      <div class="sbi" onclick="A.showPg('setup')">&#9881; GAS Config</div>
+      <div class="sbs" id="sb-sys-sec" style="display:none">ระบบ</div>
+      <div class="sbi" id="sb-gas-cfg" onclick="A.showPg('setup')" style="display:none">&#9881; GAS Config</div>
     </nav>
     <div id="sub">
       <!-- DASH -->
@@ -387,6 +388,12 @@ body.wiring{cursor:crosshair}
               <button class="btn bh bsm" onclick="TDE.resetBg()">&#8634; ใช้รูปเดิม</button>
               <button class="btn bh bsm" onclick="TDE.previewPDF()">&#128065; Preview</button>
               <button class="btn bamb bsm" onclick="TDE.reset()">&#8635; Reset All</button>
+              <div style="display:flex;align-items:center;gap:4px;background:rgba(0,0,0,.1);border-radius:var(--r);padding:3px 6px">
+                <button class="btn bh bsm" style="padding:3px 8px;font-size:13px" onclick="TDE.zoomOut()">&#8722;</button>
+                <span id="zoom-val" style="font-size:11px;font-weight:700;color:var(--ink2);min-width:34px;text-align:center">100%</span>
+                <button class="btn bh bsm" style="padding:3px 8px;font-size:13px" onclick="TDE.zoomIn()">&#43;</button>
+                <button class="btn bh bsm" style="font-size:10px" onclick="TDE.zoomReset()">1:1</button>
+              </div>
               <button class="btn bp bsm" onclick="TDE.save()">&#128190; Save Template</button>
             </div>
           </div>
@@ -639,7 +646,7 @@ const TPL={
 
 /* ── TEMPLATE DESIGNER ── */
 const TDE={
-  selId:null, dragFieldId:null, filterGroup:'all', filterQ:'',
+  selId:null, dragFieldId:null, filterGroup:'all', filterQ:'', zoom:1,
 
   init(){
     document.getElementById('tfc-bg').src=TPL.bgSrc;
@@ -648,7 +655,17 @@ const TDE={
     this.selId=null;
     document.getElementById('tpp-none').style.display='';
     document.getElementById('tpp-form').style.display='none';
+    this.applyZoom(this.zoom||1);
   },
+  applyZoom(z){
+    this.zoom=z;
+    const wrap=document.getElementById('tfc-wrap');
+    if(wrap){wrap.style.transform='scale('+z+')';wrap.style.transformOrigin='top left';}
+    const inp=document.getElementById('zoom-val');if(inp)inp.textContent=Math.round(z*100)+'%';
+  },
+  zoomIn(){this.applyZoom(Math.min(2,parseFloat(((this.zoom||1)+0.1).toFixed(1))));},
+  zoomOut(){this.applyZoom(Math.max(0.3,parseFloat(((this.zoom||1)-0.1).toFixed(1))));},
+  zoomReset(){this.applyZoom(1);},
 
   /* ── FIELD LIST ── */
   renderFieldList(){
@@ -764,32 +781,55 @@ const TDE={
     if(f.v===0)h.style.opacity='0.35';
     if(this.selId===f.id)h.classList.add('hi');
 
-    h.addEventListener('pointerdown',ev=>{
+    h.addEventListener('mousedown',ev=>{
       ev.preventDefault();ev.stopPropagation();
       this.selF(f.id);
-      h.setPointerCapture(ev.pointerId);h.classList.add('drag');
-      const sx=ev.clientX,sy=ev.clientY,ox=h.offsetLeft,oy=h.offsetTop;
+      h.classList.add('drag');
+      const zoom=TDE.zoom||1;
+      const ox=h.offsetLeft,oy=h.offsetTop,sx=ev.clientX,sy=ev.clientY;
       const onMove=e=>{
-        if(e.pointerId!==ev.pointerId)return;
-        const nx=Math.max(0,Math.min(iw-h.offsetWidth,ox+(e.clientX-sx)));
-        const ny=Math.max(0,Math.min(ih-h.offsetHeight,oy+(e.clientY-sy)));
+        const dx=(e.clientX-sx)/zoom,dy=(e.clientY-sy)/zoom;
+        const nx=Math.max(0,Math.min(iw-2,ox+dx));
+        const ny=Math.max(0,Math.min(ih-2,oy+dy));
         h.style.left=nx+'px';h.style.top=ny+'px';
         f.x=parseFloat((nx/iw*100).toFixed(3));
         f.y=parseFloat((ny/ih*100).toFixed(3));
         if(this.selId===f.id)this.updatePP(f);
         this.drawWires();
       };
-      const onUp=e=>{
-        if(e.pointerId!==ev.pointerId)return;
+      const onUp=()=>{
         h.classList.remove('drag');
-        h.removeEventListener('pointermove',onMove);
-        h.removeEventListener('pointerup',onUp);
-        h.removeEventListener('pointercancel',onUp);
+        document.removeEventListener('mousemove',onMove);
+        document.removeEventListener('mouseup',onUp);
       };
-      h.addEventListener('pointermove',onMove);
-      h.addEventListener('pointerup',onUp);
-      h.addEventListener('pointercancel',onUp);
+      document.addEventListener('mousemove',onMove);
+      document.addEventListener('mouseup',onUp);
     });
+    h.addEventListener('touchstart',ev=>{
+      ev.preventDefault();ev.stopPropagation();
+      this.selF(f.id);
+      h.classList.add('drag');
+      const zoom=TDE.zoom||1;
+      const t0=ev.touches[0],ox=h.offsetLeft,oy=h.offsetTop,sx=t0.clientX,sy=t0.clientY;
+      const onMove=e=>{
+        e.preventDefault();
+        const t=e.touches[0],dx=(t.clientX-sx)/zoom,dy=(t.clientY-sy)/zoom;
+        const nx=Math.max(0,Math.min(iw-2,ox+dx));
+        const ny=Math.max(0,Math.min(ih-2,oy+dy));
+        h.style.left=nx+'px';h.style.top=ny+'px';
+        f.x=parseFloat((nx/iw*100).toFixed(3));
+        f.y=parseFloat((ny/ih*100).toFixed(3));
+        if(this.selId===f.id)this.updatePP(f);
+        this.drawWires();
+      };
+      const onUp=()=>{
+        h.classList.remove('drag');
+        document.removeEventListener('touchmove',onMove);
+        document.removeEventListener('touchend',onUp);
+      };
+      document.addEventListener('touchmove',onMove,{passive:false});
+      document.addEventListener('touchend',onUp);
+    },{passive:false});
     wrap.appendChild(h);
   },
 
@@ -1029,6 +1069,9 @@ const A={
       document.getElementById('sb-adm-sec').style.display='';
       document.getElementById('sb-users').style.display='';
       document.getElementById('sb-tpl').style.display='';
+      document.getElementById('sb-sys-sec').style.display='';
+      document.getElementById('sb-gas-cfg').style.display='';
+      const dg=document.getElementById('dd-gas-btn');if(dg)dg.style.display='';
     }
     // load template
     A.load('\u0e42\u0e2b\u0e25\u0e14 template...');
