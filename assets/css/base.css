@@ -1,0 +1,166 @@
+/* ============================================================
+   base.css — CSS Variables, Reset, Typography, Animations
+   IT Equipment Manager v4
+   ============================================================ */
+
+/* ─── Reset & Box Model ─── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* ─── Design Tokens ─── */
+:root {
+  /* Text */
+  --ink: #0f1117;
+  --ink2: #374151;
+  --ink3: #6b7280;
+
+  /* Surfaces */
+  --bg: #f0f2f7;
+  --w: #fff;
+  --bd: #e2e5ec;
+  --bd2: #c8cdd8;
+
+  /* Brand: Primary Blue */
+  --pri: #1a5276;
+  --prid: #154360;
+  --prim: #d6eaf8;
+
+  /* Semantic: Green */
+  --grn: #059669;
+  --grnm: #ecfdf5;
+  --grnt: #065f46;
+
+  /* Semantic: Amber */
+  --amb: #d97706;
+  --ambm: #fffbeb;
+  --ambt: #92400e;
+
+  /* Semantic: Red */
+  --red: #dc2626;
+  --redm: #fef2f2;
+
+  /* Border Radii */
+  --r: 6px;
+  --r2: 10px;
+  --r3: 14px;
+
+  /* Shadows */
+  --s1: 0 1px 3px rgba(0,0,0,.08);
+  --s2: 0 4px 12px rgba(0,0,0,.1);
+  --s3: 0 20px 40px rgba(0,0,0,.15);
+}
+
+/* ─── Base Typography ─── */
+body {
+  font-family: 'Sarabun', sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  font-size: 14px;
+  line-height: 1.5;
+  min-height: 100vh;
+}
+
+/* ─── Loading Overlay ─── */
+.ld {
+  position: fixed;
+  inset: 0;
+  background: rgba(240,242,247,.93);
+  z-index: 800;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  backdrop-filter: blur(4px);
+}
+.ld.on { display: flex; }
+
+/* Spinner */
+.sp {
+  width: 36px;
+  height: 36px;
+  border: 3px solid var(--bd);
+  border-top-color: var(--pri);
+  border-radius: 50%;
+  animation: spin .7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.ld-t {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink2);
+}
+
+/* ─── Toast Notifications ─── */
+.toasts {
+  position: fixed;
+  bottom: 16px;
+  right: 16px;
+  z-index: 9000;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  pointer-events: none;
+}
+.toast {
+  padding: 9px 15px;
+  border-radius: var(--r2);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  box-shadow: var(--s2);
+  animation: toastIn .3s ease;
+  min-width: 190px;
+  pointer-events: auto;
+}
+.tok  { background: var(--grn); }
+.terr { background: var(--red); }
+.tinf { background: var(--pri); }
+@keyframes toastIn {
+  from { transform: translateX(110%); opacity: 0; }
+  to   { transform: translateX(0);   opacity: 1; }
+}
+
+/* ─── Badges / Role Labels ─── */
+.bdg {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 7px;
+  border-radius: 99px;
+  font-size: 10px;
+  font-weight: 700;
+}
+.bb  { background: #d6eaf8; color: #1a5276; }
+.bgg { background: #d1fae5; color: #065f46; }
+.ba  { background: #fef3c7; color: #92400e; }
+.bgr { background: #f3f4f6; color: #374151; }
+.bpu { background: #ede9fe; color: #5b21b6; }
+
+/* Role badge on toolbar */
+.rb { font-size: 10px; padding: 2px 6px; border-radius: 99px; font-weight: 700; }
+.r-admin      { background: #ffd700; color: #333; }
+.r-it_staff   { background: #a9cce3; color: #1a5276; }
+.r-it_manager { background: #c8e6c9; color: #1b5e20; }
+.r-viewer     { background: #d5f5e3; color: #1e8449; }
+
+/* ─── Page visibility ─── */
+.page     { display: none; }
+.page.on  { display: block; }
+
+/* ─── Empty state ─── */
+.empty { text-align: center; padding: 38px 18px; color: var(--ink3); }
+.eic   { font-size: 34px; margin-bottom: 9px; opacity: .35; }
+
+/* ─── Divider ─── */
+.dvd { border: none; border-top: 1px solid var(--bd); margin: 13px 0; }
+
+/* ─── Print ─── */
+@media print {
+  .no-print { display: none !important; }
+  body { background: #fff; }
+  @page { size: A4; margin: 0; }
+}

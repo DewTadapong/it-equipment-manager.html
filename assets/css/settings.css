@@ -1,0 +1,186 @@
+/* ============================================================
+   settings.css — Settings page: Permission Matrix,
+                  Email Config, CC Tags, Sign-Link button
+   IT Equipment Manager v4
+   ============================================================ */
+
+/* ─── Permission Matrix ─── */
+.perm-matrix {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11px;
+}
+.perm-matrix th {
+  padding: 6px 8px;
+  background: var(--bg);
+  border: 1px solid var(--bd);
+  font-weight: 700;
+  color: var(--ink3);
+  text-transform: uppercase;
+  font-size: 9px;
+  letter-spacing: .4px;
+  text-align: center;
+  white-space: nowrap;
+}
+.perm-matrix th:first-child { text-align: left; min-width: 80px; }
+.perm-matrix td {
+  padding: 5px 8px;
+  border: 1px solid var(--bd);
+  text-align: center;
+  vertical-align: middle;
+}
+.perm-matrix td:first-child { text-align: left; font-weight: 700; color: var(--ink2); white-space: nowrap; }
+.perm-matrix tr:hover td { background: #f7f9fc; }
+.perm-matrix input[type=checkbox] { width: 15px; height: 15px; cursor: pointer; accent-color: var(--pri); }
+.perm-matrix .role-admin td { background: linear-gradient(135deg, rgba(26,82,118,.05), transparent); }
+.perm-row-label { display: flex; align-items: center; gap: 6px; }
+
+/* ─── Email Config Tabs ─── */
+.ecfg-tabs {
+  display: flex;
+  gap: 0;
+  border: 1px solid var(--bd);
+  border-radius: var(--r);
+  overflow: hidden;
+  margin-bottom: 14px;
+}
+.ecfg-tab {
+  flex: 1;
+  padding: 7px 4px;
+  font-size: 11px;
+  font-weight: 600;
+  text-align: center;
+  cursor: pointer;
+  background: var(--bg);
+  color: var(--ink3);
+  border: none;
+  font-family: inherit;
+  transition: .12s;
+}
+.ecfg-tab.on { background: var(--pri); color: #fff; }
+.ecfg-pane     { display: none; }
+.ecfg-pane.on  { display: block; }
+
+/* ─── User Checklist (for IT Manager / Officer selection) ─── */
+.ucl {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 180px;
+  overflow-y: auto;
+  border: 1px solid var(--bd);
+  border-radius: var(--r);
+  padding: 6px 8px;
+  background: #fafbfd;
+}
+.ucl-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 6px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: .1s;
+}
+.ucl-item:hover { background: var(--prim); }
+.ucl-item input[type=checkbox] {
+  width: 14px;
+  height: 14px;
+  accent-color: var(--pri);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.ucl-item .ui-name { font-weight: 600; color: var(--ink); }
+.ucl-item .ui-id   { font-size: 10px; color: var(--ink3); font-family: monospace; }
+
+/* ─── CC Email Tags ─── */
+.cc-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 6px;
+}
+.cc-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  background: var(--prim);
+  color: var(--pri);
+  border-radius: 99px;
+  font-size: 11px;
+  font-weight: 600;
+  border: 1px solid #a9cce3;
+}
+.cc-tag-x { cursor: pointer; font-size: 12px; opacity: .6; padding: 0 2px; }
+.cc-tag-x:hover { opacity: 1; color: var(--red); }
+
+/* ─── Email Template Editor ─── */
+.tpl-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 6px;
+  padding: 6px 8px;
+  background: var(--bg);
+  border: 1px solid var(--bd);
+  border-radius: var(--r) var(--r) 0 0;
+  border-bottom: none;
+}
+.tpl-var-btn {
+  padding: 3px 8px;
+  font-size: 10px;
+  font-weight: 700;
+  background: var(--w);
+  border: 1px solid var(--bd2);
+  border-radius: 4px;
+  cursor: pointer;
+  color: var(--ink2);
+  font-family: 'IBM Plex Mono', monospace;
+  transition: .1s;
+}
+.tpl-var-btn:hover { background: var(--prim); border-color: var(--pri); color: var(--pri); }
+.tpl-var-btn.link-btn { background: #d1fae5; border-color: #6ee7b7; color: var(--grnt); }
+.tpl-var-btn.link-btn:hover { background: #a7f3d0; }
+.tpl-textarea {
+  border-top-left-radius:  0 !important;
+  border-top-right-radius: 0 !important;
+  font-family: 'IBM Plex Mono', monospace !important;
+  font-size: 11px !important;
+  min-height: 100px;
+  resize: vertical;
+}
+
+/* ─── Sign Link Button (in doc detail & mail preview) ─── */
+.sign-link-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: linear-gradient(135deg, var(--pri), #2980b9);
+  color: #fff;
+  border-radius: var(--r2);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  border: none;
+  font-family: inherit;
+  box-shadow: var(--s1);
+  transition: .12s;
+  text-decoration: none;
+}
+.sign-link-btn:hover {
+  background: linear-gradient(135deg, var(--prid), #2471a3);
+  transform: translateY(-1px);
+  box-shadow: var(--s2);
+}
+.sign-link-btn:active { transform: scale(.97); }
+
+/* ─── Folder ID indicator ─── */
+#cfg-folder-cur {
+  font-size: 10px;
+  color: var(--grn);
+  font-weight: 600;
+  margin-top: 4px;
+}

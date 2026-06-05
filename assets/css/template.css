@@ -1,0 +1,185 @@
+/* ============================================================
+   template.css — Template Designer Editor (TDE)
+   Full-screen 3-panel layout: FieldList | Canvas | PropPanel
+   IT Equipment Manager v4
+   ============================================================ */
+
+/* ─── TDE shell ─── */
+.tde {
+  display: flex;
+  height: calc(100vh - 130px);
+  min-height: 500px;
+  overflow: hidden;
+}
+
+/* ─── LEFT: Field panel ─── */
+.tfl {
+  width: 240px;
+  flex-shrink: 0;
+  border-right: 1px solid var(--bd);
+  display: flex;
+  flex-direction: column;
+  background: #fafbfd;
+}
+.tfl-top {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--bd);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.tfl-search {
+  padding: 5px 8px;
+  border: 1px solid var(--bd2);
+  border-radius: var(--r);
+  font-size: 11px;
+  font-family: inherit;
+  background: var(--w);
+  outline: none;
+  width: 100%;
+}
+.tfl-search:focus { border-color: var(--pri); }
+
+.tfl-tabs { display: flex; gap: 2px; }
+.tfl-tab {
+  flex: 1;
+  padding: 4px 2px;
+  font-size: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid var(--bd2);
+  border-radius: 4px;
+  text-align: center;
+  background: var(--w);
+  color: var(--ink3);
+  font-family: inherit;
+  transition: .1s;
+}
+.tfl-tab.on { background: var(--pri); color: #fff; border-color: var(--pri); }
+
+.tfl-list  { flex: 1; overflow-y: auto; padding: 4px 0; }
+.tfl-group { font-size: 9px; font-weight: 700; color: var(--ink3); text-transform: uppercase; letter-spacing: .8px; padding: 5px 11px 2px; }
+.tfl-item  {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 11px;
+  cursor: grab;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--ink2);
+  transition: .1s;
+  border-left: 2px solid transparent;
+  user-select: none;
+}
+.tfl-item:hover { background: var(--prim); color: var(--pri); }
+.tfl-item.placed { color: var(--grn); border-left-color: var(--grn); }
+.tfl-item.dragging-src { opacity: .4; }
+.tfl-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--bd2); flex-shrink: 0; }
+.tfl-item.placed .tfl-dot { background: var(--grn); }
+
+/* ─── CENTER: Canvas ─── */
+.tfc {
+  flex: 1;
+  overflow: auto;
+  background: #555;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  padding: 16px;
+  position: relative;
+}
+.tfc-wrap {
+  position: relative;
+  display: inline-block;
+  box-shadow: 0 4px 24px rgba(0,0,0,.5);
+  line-height: 0;
+  cursor: default;
+}
+.tfc-wrap img {
+  display: block;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+/* Wire SVG overlay */
+.wire-svg {
+  position: absolute;
+  top: 0; left: 0;
+  pointer-events: none;
+  overflow: visible;
+}
+
+/* Field handles */
+.fh {
+  position: absolute;
+  background: rgba(26,82,118,.82);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  font-family: 'Sarabun', sans-serif;
+  padding: 2px 6px;
+  border-radius: 4px;
+  cursor: grab;
+  white-space: nowrap;
+  user-select: none;
+  -webkit-user-select: none;
+  border: 2px solid rgba(255,255,255,.55);
+  z-index: 10;
+  line-height: 1.4;
+  touch-action: none;
+  transition: background .1s;
+}
+.fh:hover,
+.fh.hi { background: rgba(26,82,118,1); z-index: 20; }
+.fh.drag { cursor: grabbing; background: #c0392b; z-index: 30; }
+
+/* Ghost drop zone */
+.fh-ghost {
+  position: absolute;
+  background: rgba(26,82,118,.3);
+  border: 2px dashed rgba(26,82,118,.6);
+  border-radius: 4px;
+  pointer-events: none;
+  z-index: 5;
+  transition: opacity .15s;
+}
+
+/* Wire drag from field list */
+body.wiring { cursor: crosshair; }
+.wire-preview { position: fixed; pointer-events: none; z-index: 9999; display: none; }
+.wire-preview.on { display: block; }
+
+/* ─── RIGHT: Property panel ─── */
+.tpp {
+  width: 260px;
+  flex-shrink: 0;
+  border-left: 1px solid var(--bd);
+  overflow-y: auto;
+  background: var(--w);
+  display: flex;
+  flex-direction: column;
+}
+.tpp-hd   { padding: 10px 12px; border-bottom: 1px solid var(--bd); font-size: 11px; font-weight: 700; color: var(--ink2); }
+.tpp-body { padding: 12px; flex: 1; overflow-y: auto; }
+.tpp .fg  { margin-bottom: 9px; }
+.tpp-hint {
+  font-size: 11px;
+  color: var(--ink3);
+  line-height: 1.5;
+  background: var(--bg);
+  border-radius: var(--r);
+  padding: 8px 10px;
+  margin-bottom: 11px;
+}
+.tpp-val {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  color: var(--pri);
+  background: var(--prim);
+  border-radius: 4px;
+  padding: 3px 6px;
+  word-break: break-all;
+  margin-bottom: 9px;
+}
