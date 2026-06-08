@@ -1,4 +1,4 @@
-﻿'use strict';
+'use strict';
 /* designer.js - Template Designer Editor (TDE) */
 const TDE={
   selId:null, dragFieldId:null, filterGroup:'all', filterQ:'', zoom:1,
@@ -10,7 +10,22 @@ const TDE={
     this.selId=null;
     document.getElementById('tpp-none').style.display='';
     document.getElementById('tpp-form').style.display='none';
-    this.applyZoom(this.zoom||1);
+    const bg = document.getElementById('tfc-bg');
+    bg.onload = () => { this.autoFitZoom(); this.renderHandles(); };
+    bg.src=TPL.bgSrc;
+    if(bg.complete) { this.autoFitZoom(); }
+  },
+  autoFitZoom(){
+    const tfc = document.querySelector('.tfc');
+    const wrap = document.getElementById('tfc-wrap');
+    if(!tfc || !wrap) return;
+    const padding = 32; // 16px padding on both sides
+    const availableW = tfc.clientWidth - padding;
+    const imgW = document.getElementById('tfc-bg').offsetWidth || 794;
+    let z = availableW / imgW;
+    if(z > 1) z = 1; // Don't scale up past 100% by default
+    z = Math.max(0.3, parseFloat(z.toFixed(2)));
+    this.applyZoom(z);
   },
   applyZoom(z){
     this.zoom=z;
@@ -45,7 +60,7 @@ const TDE={
         onclick="TDE.clickFromList('${fd.id}')">
         <div class="tfl-dot"></div>
         <span>${fd.label}</span>
-        ${placed?'<span style="font-size:9px;color:var(--grn);margin-left:auto">\u2713</span>':''}
+        ${placed?`<span class="tfl-del-btn" onclick="event.stopPropagation();TDE.selId='${fd.id}';TDE.removeField()" title="ลบออกจากฟอร์ม">\u2715 ลบ</span>`:`<span style="font-size:9px;color:var(--ink3);margin-left:auto">+</span>`}
       </div>`;
     });
     if(!html)html='<div style="padding:12px;font-size:11px;color:var(--ink3)">\u0e44\u0e21\u0e48\u0e1e\u0e1a field</div>';
@@ -185,6 +200,87 @@ const TDE={
       document.addEventListener('touchmove',onMove,{passive:false});
       document.addEventListener('touchend',onUp);
     },{passive:false});
+
+    // ── Delete Button ──
+    const delBtn = document.createElement('div');
+    delBtn.className = 'fh-del';
+    delBtn.innerHTML = '&#10005;';
+    delBtn.title = 'ลบ Field';
+    delBtn.onclick = (ev) => {
+      ev.stopPropagation();
+      this.selF(f.id);
+      this.removeField();
+    };
+    h.appendChild(delBtn);
+
+    // ── Resize Handle ──
+    const resHandle = document.createElement('div');
+    resHandle.className = 'fh-res';
+    resHandle.title = 'ลากเพื่อปรับขนาด';
+    
+    // Resize Mouse
+    resHandle.addEventListener('mousedown', ev => {
+      ev.preventDefault(); ev.stopPropagation();
+      this.selF(f.id);
+      h.classList.add('drag');
+      const zoom = TDE.zoom || 1;
+      const sy = ev.clientY;
+      const startFs = f.fs;
+      
+      const onResMove = e => {
+        const dy = (e.clientY - sy) / zoom;
+        let newFs = Math.max(6, Math.round(startFs + dy)); // minimum font size 6
+        f.fs = newFs;
+        if(f.path.startsWith('sig:')){
+          // Also proportionally adjust max width for images if needed, or just let mw be handled by user
+          // For images, fs acts as height. Let's make mw follow a ratio roughly.
+          f.mw = Math.min(100, Math.max(2, parseFloat((newFs / ih * 100 * 2).toFixed(1)))); // rough scaling
+        }
+        h.style.fontSize = Math.round(f.fs*(iw/794))+'px';
+        if(this.selId===f.id) this.updatePP(f);
+      };
+      const onResUp = () => {
+        h.classList.remove('drag');
+        document.removeEventListener('mousemove', onResMove);
+        document.removeEventListener('mouseup', onResUp);
+        this.drawWires();
+      };
+      document.addEventListener('mousemove', onResMove);
+      document.addEventListener('mouseup', onResUp);
+    });
+    
+    // Resize Touch
+    resHandle.addEventListener('touchstart', ev => {
+      ev.preventDefault(); ev.stopPropagation();
+      this.selF(f.id);
+      h.classList.add('drag');
+      const zoom = TDE.zoom || 1;
+      const sy = ev.touches[0].clientY;
+      const startFs = f.fs;
+      
+      const onResMove = e => {
+        e.preventDefault();
+        const dy = (e.touches[0].clientY - sy) / zoom;
+        let newFs = Math.max(6, Math.round(startFs + dy));
+        f.fs = newFs;
+        if(f.path.startsWith('sig:')){
+          f.mw = Math.min(100, Math.max(2, parseFloat((newFs / ih * 100 * 2).toFixed(1))));
+        }
+        h.style.fontSize = Math.round(f.fs*(iw/794))+'px';
+        if(this.selId===f.id) this.updatePP(f);
+      };
+      const onResUp = () => {
+        h.classList.remove('drag');
+        document.removeEventListener('touchmove', onResMove);
+        document.removeEventListener('touchend', onResUp);
+        this.drawWires();
+      };
+      document.addEventListener('touchmove', onResMove, {passive:false});
+      document.addEventListener('touchend', onResUp);
+    }, {passive:false});
+    
+    h.appendChild(resHandle);
+
     wrap.appendChild(h);
   },
 
@@ -303,7 +399,7 @@ const TDE={
       TPL.bgSrc=e.target.result;
       document.getElementById('tfc-bg').src=TPL.bgSrc;
       // re-render handles after image loads
-      document.getElementById('tfc-bg').onload=()=>this.renderHandles();
+      document.getElementById('tfc-bg').onload=()=>{ this.autoFitZoom(); this.renderHandles(); };
       A.toast('\u0e40\u0e1b\u0e25\u0e35\u0e48\u0e22\u0e19\u0e23\u0e39\u0e1b\u0e1f\u0e2d\u0e23\u0e4c\u0e21\u0e41\u0e25\u0e49\u0e27 \u2014 \u0e1b\u0e23\u0e31\u0e1a\u0e15\u0e33\u0e41\u0e2b\u0e19\u0e48\u0e07 field \u0e43\u0e2b\u0e49\u0e15\u0e23\u0e07\u0e41\u0e25\u0e49\u0e27 Save','info');
     };
     fr.readAsDataURL(file);
@@ -313,7 +409,7 @@ const TDE={
   resetBg(){
     TPL.bgSrc=DEFAULT_IMG;
     document.getElementById('tfc-bg').src=TPL.bgSrc;
-    document.getElementById('tfc-bg').onload=()=>this.renderHandles();
+    document.getElementById('tfc-bg').onload=()=>{ this.autoFitZoom(); this.renderHandles(); };
     A.toast('\u0e01\u0e25\u0e31\u0e1a\u0e23\u0e39\u0e1b\u0e40\u0e14\u0e34\u0e21\u0e41\u0e25\u0e49\u0e27','ok');
   },
 
@@ -358,7 +454,7 @@ function buildPrintHTML(doc, tpl){
       // signature image only
       const sObj=val;
       if(!sObj||!sObj.sig)return;
-      spans+=`<div style="position:absolute;left:${f.x.toFixed(3)}%;top:${f.y.toFixed(3)}%;max-width:${f.mw.toFixed(1)}%;text-align:center"><img src="${sObj.sig}" style="max-width:100%;max-height:50px;object-fit:contain"></div>`;
+      spans+=`<div style="position:absolute;left:${f.x.toFixed(3)}%;top:${f.y.toFixed(3)}%;max-width:${f.mw.toFixed(1)}%;height:${f.fs}px;display:flex;align-items:center;justify-content:center"><img src="${sObj.sig}" style="max-width:100%;max-height:100%;object-fit:contain"></div>`;
     } else {
       if(val===''||val===null||val===undefined)return;
       spans+=`<span style="position:absolute;left:${f.x.toFixed(3)}%;top:${f.y.toFixed(3)}%;font-size:${f.fs}px;font-family:Sarabun,sans-serif;color:#111;white-space:nowrap;overflow:hidden;max-width:${f.mw.toFixed(1)}%;line-height:1.2">${val}</span>`;
