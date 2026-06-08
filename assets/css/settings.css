@@ -184,3 +184,41 @@
   font-weight: 600;
   margin-top: 4px;
 }
+
+/* ─── Sign Notification Recipient Tags ─── */
+.sn-recip-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 8px 4px 10px;
+  background: linear-gradient(135deg, #d6eaf8, #eaf4fc);
+  border: 1px solid #a9cce3;
+  border-radius: 99px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--pri);
+  max-width: 260px;
+}
+.sn-rt-name { font-weight: 700; color: var(--ink); }
+.sn-rt-email {
+  font-size: 10px;
+  color: var(--ink3);
+  font-family: 'IBM Plex Mono', monospace;
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.sn-rt-remove {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--ink3);
+  font-size: 11px;
+  padding: 0 2px;
+  line-height: 1;
+  border-radius: 50%;
+  transition: .1s;
+}
+.sn-rt-remove:hover { color: var(--red); background: var(--redm); }
+.sn-added { opacity: .6; cursor: default !important; }

@@ -58,6 +58,15 @@
 }
 @media (max-width: 700px) { .aw { grid-template-columns: 1fr; } }
 
+/* Sign link mode — no sidebar, full width */
+.aw.sign-mode {
+  grid-template-columns: 1fr;
+  max-width: 780px;
+}
+@media (max-width: 768px) {
+  .aw.sign-mode { max-width: 100%; padding: 8px; }
+}
+
 /* ─── Sidebar Navigation ─── */
 .sbar {
   background: var(--w);

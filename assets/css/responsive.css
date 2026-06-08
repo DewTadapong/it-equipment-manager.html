@@ -1,0 +1,393 @@
+/* ============================================================
+   responsive.css — Mobile & Tablet Responsive Overrides
+   IT Equipment Manager v4
+   Breakpoints:
+     xs  ≤ 480px  (mobile portrait)
+     sm  ≤ 640px  (mobile landscape / small)
+     md  ≤ 768px  (tablet portrait)
+     lg  ≤ 1024px (tablet landscape / small desktop)
+   ============================================================ */
+
+/* ─────────────────────────────────────────────────────────────
+   TABLET LANDSCAPE & SMALL DESKTOP  (≤1024px)
+───────────────────────────────────────────────────────────── */
+@media (max-width: 1024px) {
+  .aw {
+    max-width: 100%;
+    padding: 14px 12px;
+    gap: 12px;
+  }
+
+  /* Slightly narrower sidebar */
+  .sbar { min-width: 0; }
+
+  /* Stat cards: 2 columns */
+  .sts { grid-template-columns: repeat(2, 1fr); }
+
+  /* Template designer panels narrower */
+  .tfl { width: 200px; }
+  .tpp { width: 220px; }
+}
+
+
+/* ─────────────────────────────────────────────────────────────
+   TABLET PORTRAIT  (≤768px)
+───────────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+
+  /* ── Toolbar ── */
+  .tb { padding: 0 12px; }
+  .tb-t { font-size: 12px; }
+  .tb-s { display: none; }
+
+  /* ── App layout: stack sidebar above content ── */
+  .aw {
+    grid-template-columns: 1fr;
+    padding: 10px;
+    gap: 10px;
+  }
+
+  /* ── Sidebar: horizontal scrolling row on tablet ── */
+  .sbar {
+    position: static !important;
+    display: flex;
+    flex-direction: row;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    border-radius: var(--r2);
+    padding: 4px 2px;
+    white-space: nowrap;
+    scrollbar-width: none;
+    gap: 0;
+  }
+  .sbar::-webkit-scrollbar { display: none; }
+
+  .sbs { display: none; } /* hide section labels */
+
+  .sbi {
+    flex-shrink: 0;
+    padding: 7px 11px;
+    border-left: none;
+    border-bottom: 3px solid transparent;
+    font-size: 11px;
+    gap: 5px;
+  }
+  .sbi.on {
+    border-left: none;
+    border-bottom-color: var(--pri);
+  }
+
+  /* ── Stats grid: 2 col ── */
+  .sts {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+  .stn { font-size: 20px; }
+  .stl { font-size: 10px; }
+
+  /* ── Search / filter toolbar: wrap ── */
+  .tlb {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 7px;
+    margin-bottom: 10px;
+  }
+  .sq { min-width: 100%; }
+  .fsel { width: 100%; }
+
+  /* ── Tables: horizontal scroll ── */
+  .tw { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  table { min-width: 560px; }
+  thead th, tbody td { padding: 7px 8px; font-size: 11px; }
+
+  /* ── Dashboard action column ── */
+  .tr td:last-child { white-space: nowrap; }
+
+  /* ── Create form: single column ── */
+  .fg2 { grid-template-columns: 1fr; gap: 9px; }
+  .full { grid-column: auto; }
+
+  /* ── Info grid: 1 column on tablet ── */
+  .ig { grid-template-columns: 1fr; }
+
+  /* ── Signature grid: 2 col ── */
+  .sgrid { grid-template-columns: repeat(2, 1fr); }
+
+  /* ── Modals: full width ── */
+  .modal {
+    max-width: 100%;
+    margin: 0;
+    border-radius: var(--r2) var(--r2) 0 0;
+    max-height: 92vh;
+  }
+  .ov {
+    align-items: flex-end;
+    padding: 0;
+  }
+
+  /* ── Breadcrumb ── */
+  .bcrumb { font-size: 11px; }
+
+  /* ── Cards ── */
+  .card { padding: 14px; }
+  .card + .card { margin-top: 9px; }
+
+  /* ── Sign modal canvas ── */
+  #sig-cvs { height: 130px; }
+  #ret-cvs { height: 130px; }
+
+  /* ── Mail modal ── */
+  .mft { flex-wrap: wrap; gap: 6px; }
+  .mft button { flex: 1; min-width: 120px; }
+
+  /* ── Detail: sign section ── */
+  .sgrid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+
+  /* ── Step row ── */
+  .slbl { font-size: 9px; }
+  .sdot { width: 24px; height: 24px; font-size: 10px; }
+
+  /* ── Template designer: stacked ── */
+  .tde {
+    flex-direction: column;
+    height: auto;
+    min-height: 0;
+  }
+  .tfl {
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid var(--bd);
+    max-height: 200px;
+  }
+  .tfl-list { max-height: 130px; }
+  .tfc {
+    min-height: 320px;
+    padding: 8px;
+  }
+  .tpp {
+    width: 100%;
+    border-left: none;
+    border-top: 1px solid var(--bd);
+    max-height: 280px;
+  }
+
+  /* ── Settings: permission matrix scroll ── */
+  .perm-matrix { min-width: 560px; }
+  .perm-wrap { overflow-x: auto; }
+
+  /* ── Settings: email config tabs ── */
+  .ecfg-tab { font-size: 10px; padding: 6px 2px; }
+
+  /* ── Import/Export ── */
+  .io-grid { grid-template-columns: 1fr !important; }
+}
+
+
+/* ─────────────────────────────────────────────────────────────
+   MOBILE  (≤640px)
+───────────────────────────────────────────────────────────── */
+@media (max-width: 640px) {
+
+  /* ── Body font ── */
+  body { font-size: 13px; }
+
+  /* ── Toolbar ── */
+  .tb { height: 46px; padding: 0 10px; gap: 8px; }
+  .tb-ico { width: 26px; height: 26px; font-size: 14px; }
+  .tb-t { font-size: 11px; }
+
+  /* ── App wrap ── */
+  .aw { padding: 8px; gap: 8px; }
+
+  /* ── Sidebar: compact icons+text row ── */
+  .sbi { padding: 6px 9px; font-size: 10px; }
+
+  /* ── Stats: 2 col tighter ── */
+  .sts { gap: 6px; }
+  .st  { padding: 10px 12px; }
+  .stn { font-size: 18px; }
+
+  /* ── Cards ── */
+  .card { padding: 12px; border-radius: var(--r2); }
+  .sh   { font-size: 10px; margin-bottom: 10px; }
+
+  /* ── Forms ── */
+  .fg label { font-size: 11px; }
+  .fg input, .fg select, .fg textarea { padding: 8px 10px; font-size: 13px; }
+
+  /* ── Equipment table ── */
+  .et th, .et td { padding: 5px 4px; font-size: 10px; }
+  .et input { font-size: 11px; padding: 4px; }
+
+  /* ── Buttons ── */
+  .btn { font-size: 12px; padding: 8px 12px; }
+  .bsm { font-size: 10px; padding: 5px 8px; }
+  .blg { font-size: 13px; padding: 10px 16px; }
+
+  /* ── Tables in list ── */
+  table { min-width: 500px; }
+  thead th { font-size: 9px; padding: 6px 7px; }
+  tbody td { font-size: 11px; padding: 7px 7px; }
+
+  /* ── Signature grid: 1 col on mobile ── */
+  .sgrid { grid-template-columns: 1fr; gap: 7px; }
+
+  /* ── Modals: full screen ── */
+  .ov { padding: 0; align-items: flex-end; }
+  .modal {
+    border-radius: 16px 16px 0 0;
+    max-width: 100%;
+    max-height: 95vh;
+  }
+  .mhd { padding: 12px 15px 9px; }
+  .mbd { padding: 12px 15px; }
+  .mft { padding: 9px 15px; flex-wrap: wrap; }
+  .mft button { flex: 1 1 auto; min-width: 110px; font-size: 12px; }
+
+  /* ── Sign modal name input ── */
+  #sign-n { font-size: 14px; }
+
+  /* ── Sign step progress ── */
+  .step-row { margin-bottom: 10px; }
+  .sdot  { width: 22px; height: 22px; font-size: 9px; }
+  .slbl  { font-size: 9px; margin-top: 3px; }
+
+  /* ── Login card ── */
+  .lw { padding: 16px; }
+  .lc { padding: 24px 18px; border-radius: 12px; }
+  .lic { width: 48px; height: 48px; font-size: 22px; }
+
+  /* ── Setup page ── */
+  .sw { margin: 16px auto; padding: 0 10px; }
+  .sc { padding: 16px; }
+
+  /* ── Toast: bottom left on mobile ── */
+  .toasts { right: 10px; bottom: 10px; left: 10px; }
+  .toast  { min-width: 0; width: 100%; font-size: 12px; }
+
+  /* ── Breadcrumb ── */
+  .bcrumb { font-size: 10px; gap: 5px; margin-bottom: 9px; }
+
+  /* ── Detail page info grid ── */
+  .ig { gap: 7px; }
+  .ii .lb { font-size: 9px; }
+  .ii .vl { font-size: 12px; }
+
+  /* ── Action bar ── */
+  .abar { gap: 6px; }
+  .abar .btn { flex: 1; justify-content: center; }
+
+  /* ── Return bar ── */
+  .rbar { padding: 9px 11px; }
+
+  /* ── User checklist ── */
+  .ucl { max-height: 140px; }
+  .ucl-item { font-size: 11px; }
+
+  /* ── Email template tabs ── */
+  .ecfg-tabs { flex-direction: column; }
+  .ecfg-tab  { border-radius: 0; }
+  .ecfg-tabs .ecfg-tab:first-child { border-radius: var(--r) var(--r) 0 0; }
+  .ecfg-tabs .ecfg-tab:last-child  { border-radius: 0 0 var(--r) var(--r); }
+
+  /* ── Permission matrix ── */
+  .perm-matrix { font-size: 10px; min-width: 500px; }
+
+  /* ── Folder test result ── */
+  #folder-test-res { font-size: 11px; }
+
+  /* ── User dropdown ── */
+  #udd { right: 8px; min-width: 150px; }
+
+  /* ── Document type selector ── */
+  #lbl-dl, #lbl-rc { padding: 7px 10px; font-size: 11px; }
+
+  /* ── Completeness radio ── */
+  #misssec { overflow-x: auto; }
+
+  /* ── Dept / Users tables ── */
+  #dept-tb, #utb { min-width: 480px; }
+
+  /* ── Canvas signature ── */
+  #sig-cvs  { height: 120px; }
+  #ret-cvs  { height: 120px; }
+
+  /* ── Sign link banner ── */
+  .slb { padding: 9px 12px; border-radius: var(--r); gap: 8px; }
+  .slb h3 { font-size: 12px; }
+  .slb p  { font-size: 10px; }
+
+  /* ── Sign mode (external link view) ── */
+  .aw.sign-mode { max-width: 100%; padding: 8px; }
+}
+
+
+/* ─────────────────────────────────────────────────────────────
+   MOBILE PORTRAIT SMALL  (≤480px)
+───────────────────────────────────────────────────────────── */
+@media (max-width: 480px) {
+
+  /* ── Stats: 2x2 grid tighter ── */
+  .st { padding: 9px 10px; }
+  .stn { font-size: 16px; }
+  .stl { font-size: 9px; }
+
+  /* ── Toolbar show only icon + short title ── */
+  .tb-ico { display: flex; }
+
+  /* ── Sidebar even more compact ── */
+  .sbi { padding: 5px 8px; font-size: 10px; }
+
+  /* ── Modal almost full screen ── */
+  .modal { max-height: 96vh; }
+
+  /* ── Signature tabs ── */
+  .stabs { gap: 0; }
+  .stab  { font-size: 11px; padding: 6px 10px; }
+
+  /* ── Form group in modal ── */
+  .mbd .fg { gap: 3px; }
+  .mbd .fg input { padding: 8px 9px; }
+
+  /* ── Mail modal ── */
+  #mail-to, #mail-cc, #mail-subj { font-size: 11px; word-break: break-all; }
+
+  /* ── Canvas ── */
+  #sig-cvs { height: 110px; }
+  #ret-cvs { height: 110px; }
+
+  /* ── Upload label ── */
+  #sig-upload-label { padding: 14px 0; }
+  #sig-upload-label div:first-child { font-size: 28px; }
+}
+
+
+/* ─────────────────────────────────────────────────────────────
+   UTILITY HELPERS
+───────────────────────────────────────────────────────────── */
+
+/* Make tables inside wrappers scrollable */
+.tw, .perm-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+/* Touch-friendly tap targets ≥44px */
+@media (hover: none) and (pointer: coarse) {
+  .btn { min-height: 40px; }
+  .sbi { min-height: 40px; }
+  .hi  { min-height: 40px; display: flex; align-items: center; }
+  .stab { min-height: 38px; }
+  .ucl-item { min-height: 38px; }
+  .fsel { min-height: 40px; }
+  .fg input, .fg select { min-height: 44px; }
+}
+
+/* Prevent zoom on input focus (iOS) */
+@media (max-width: 768px) {
+  input, select, textarea {
+    font-size: max(16px, 1em) !important;
+  }
+  /* But keep small labels */
+  .fg label { font-size: 11px !important; }
+  .sh, .lb  { font-size: inherit !important; }
+}

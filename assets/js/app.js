@@ -367,8 +367,14 @@ const A={
       const doc=await GAS.getDoc(docId);if(!doc){this.unload();alert('\u0e44\u0e21\u0e48\u0e1e\u0e1a '+docId);return;}
       const i=this.docs.findIndex(x=>x.id===docId);if(i>=0)this.docs[i]=doc;else this.docs.push(doc);
       this.curDoc=docId;this.unload();
-      this.showPg('app');document.getElementById('sidebar').style.display='none';
-      ['s-dash','s-create','s-users','s-tpl'].forEach(id=>{const e=document.getElementById(id);if(e)e.style.display='none';});
+      this.showPg('app');
+      // Hide sidebar + collapse grid to full width using CSS class
+      const sidebar=document.getElementById('sidebar');
+      if(sidebar){sidebar.style.display='none';}
+      const aw=document.querySelector('.aw');
+      if(aw){aw.classList.add('sign-mode');}
+      // Hide all sub-pages except detail
+      ['s-dash','s-create','s-users','s-tpl','s-dept','s-io','s-settings'].forEach(id=>{const e=document.getElementById(id);if(e)e.style.display='none';});
       document.getElementById('s-detail').style.display='';
       document.getElementById('det-bc').textContent=docId;
       // load template for PDF
@@ -487,8 +493,10 @@ const A={
     try{
       if(this.fromLink){await GAS.signDoc(this.curDoc,key,sigObj);doc.sigs=newSigs;doc.status=newStatus;}
       else{doc.sigs=newSigs;doc.status=newStatus;await GAS.updateDoc(this.curDoc,{sigs:newSigs,status:newStatus});}
-      this.cSign();this.renderDet(doc);this.toast('\u0e25\u0e07\u0e19\u0e32\u0e21\u0e2a\u0e33\u0e40\u0e23\u0e47\u0e08 \u2713','ok');
+      this.cSign();this.renderDet(doc);this.renderStats();
+      this.toast('\u0e25\u0e07\u0e19\u0e32\u0e21\u0e2a\u0e33\u0e40\u0e23\u0e47\u0e08 \u2713','ok');
       if(newStatus==='completed')this.toast('\u0e40\u0e2d\u0e01\u0e2a\u0e32\u0e23\u0e04\u0e23\u0e1a\u0e16\u0e49\u0e27\u0e19 \u2013 \u0e1e\u0e23\u0e49\u0e2d\u0e21\u0e1e\u0e34\u0e21\u0e1e\u0e4c \u2713','info');
+      this.sendSignNotification(doc, key, nm);
     }catch(ex){this.toast(ex.message,'err');}
     finally{btn.disabled=false;btn.textContent='\u2713 \u0e22\u0e37\u0e19\u0e22\u0e31\u0e19';}
   },
@@ -513,8 +521,54 @@ const A={
     const ri={itName,sig,note:document.getElementById('ret-note').value.trim(),at:new Date().toISOString()};
     const doc=this.docLocal(this.curDoc);
     const btn=document.getElementById('btn-cret');btn.disabled=true;btn.textContent='\u23f3...';
-    try{await GAS.updateDoc(this.curDoc,{returnInfo:ri,status:'returned'});doc.returnInfo=ri;doc.status='returned';this.cRet();this.renderDet(doc);this.renderStats();this.toast('\u0e1a\u0e31\u0e19\u0e17\u0e36\u0e01\u0e23\u0e31\u0e1a\u0e04\u0e37\u0e19\u0e2a\u0e33\u0e40\u0e23\u0e47\u0e08 \u2713','ok');}
+    try{await GAS.updateDoc(this.curDoc,{returnInfo:ri,status:'returned'});doc.returnInfo=ri;doc.status='returned';this.cRet();this.renderDet(doc);this.renderStats();this.toast('\u0e1a\u0e31\u0e19\u0e17\u0e36\u0e01\u0e23\u0e31\u0e1a\u0e04\u0e37\u0e19\u0e2a\u0e33\u0e40\u0e23\u0e47\u0e08 \u2713','ok');this.sendSignNotification(doc,'returned',itName);}
     catch(ex){this.toast(ex.message,'err');}finally{btn.disabled=false;btn.textContent='\u2713 \u0e22\u0e37\u0e19\u0e22\u0e31\u0e19';}
+  },
+
+  async sendSignNotification(doc, sigRole, signerName){
+    try{
+      const cfg = this.sysCfg || {};
+      const notifCfg = cfg.signNotif || {};
+      if(!notifCfg.enabled) return; // silent skip if not configured
+
+      const orgName = cfg.orgName || 'IT Department';
+      const roleLabels = {itOfficer:'IT Officer',itManager:'IT Manager',recipient:'\u0e1c\u0e39\u0e49\u0e23\u0e31\u0e1a\u0e2d\u0e38\u0e1b\u0e01\u0e23\u0e13\u0e4c',returned:'\u0e1c\u0e39\u0e49\u0e23\u0e31\u0e1a\u0e04\u0e37\u0e19'};
+      const roleLbl = roleLabels[sigRole] || sigRole;
+
+      // Build recipient list from config
+      const toEmails = (notifCfg.recipients || []).map(r=>r.email).filter(Boolean);
+      if(!toEmails.length) return;
+
+      const to = toEmails.join(',');
+      const cc = Array.isArray(cfg.ccEmails) ? cfg.ccEmails.join(',') : (cfg.ccEmails||'');
+
+      // Template
+      const tplSubj = notifCfg.subject || '[IT Equipment] \u0e25\u0e07\u0e19\u0e32\u0e21\u0e41\u0e25\u0e49\u0e27 \u2014 {doc_id} ({role})';
+      const tplBody = notifCfg.body || '\u0e40\u0e23\u0e35\u0e22\u0e19 \u0e17\u0e35\u0e21 IT\n\n\u0e21\u0e35\u0e01\u0e32\u0e23\u0e25\u0e07\u0e19\u0e32\u0e21{role}\u0e43\u0e19\u0e40\u0e2d\u0e01\u0e2a\u0e32\u0e23 {doc_id} \u0e40\u0e23\u0e35\u0e22\u0e1a\u0e23\u0e49\u0e2d\u0e22\u0e41\u0e25\u0e49\u0e27\n\n\u0e1c\u0e39\u0e49\u0e25\u0e07\u0e19\u0e32\u0e21: {signer_name}\n\u0e27\u0e31\u0e19\u0e17\u0e35\u0e48: {signed_at}\n\u0e0a\u0e37\u0e48\u0e2d\u0e1c\u0e39\u0e49\u0e04\u0e23\u0e2d\u0e1a\u0e04\u0e23\u0e2d\u0e07: {owner_name}\n\u0e41\u0e1c\u0e19\u0e01: {dept}\n\u0e42\u0e23\u0e07\u0e1e\u0e22\u0e32\u0e1a\u0e32\u0e25: {hospital}\n\n\u0e02\u0e2d\u0e1a\u0e04\u0e38\u0e13\n{org_name}';
+
+      const vars = {
+        '{doc_id}': doc.id || '',
+        '{role}': roleLbl,
+        '{signer_name}': signerName,
+        '{signed_at}': new Date().toLocaleString('th-TH'),
+        '{owner_name}': doc.name || '',
+        '{dept}': doc.dept || '',
+        '{hospital}': doc.hospital || '',
+        '{org_name}': orgName
+      };
+
+      let subject = tplSubj;
+      let body = tplBody;
+      Object.entries(vars).forEach(([k,v])=>{subject=subject.replaceAll(k,v);body=body.replaceAll(k,v);});
+
+      const htmlBody = body.replace(/\n/g,'<br>');
+      // Fire and forget
+      GAS.post({action:'sendMail',to,cc,subject,body,htmlBody}).then(()=>{
+        this.toast('\u2713 \u0e2a\u0e48\u0e07\u0e41\u0e08\u0e49\u0e07\u0e40\u0e15\u0e37\u0e2d\u0e19\u0e2d\u0e35\u0e40\u0e21\u0e25\u0e41\u0e25\u0e49\u0e27','ok');
+      }).catch(err=>{
+        console.warn('Sign notification email failed:',err.message);
+      });
+    }catch(e){console.warn('sendSignNotification error:',e);}
   },
 
   async loadUsers(){this.load('\u0e01\u0e33\u0e25\u0e31\u0e07\u0e42\u0e2b\u0e25\u0e14\u0e1c\u0e39\u0e49\u0e43\u0e0a\u0e49...');try{this.users=await GAS.getUsers();this.renderUsers();}catch(ex){this.toast(ex.message,'err');}finally{this.unload();}},
@@ -629,6 +683,8 @@ const A={
       this.renderEmailCfg(sysCfg);
       // Checklists
       this.renderITChecklists(sysCfg);
+      // Sign notification
+      this.renderSignNotifConfig(sysCfg);
     }catch(ex){this.toast('โหลดการตั้งค่าไม่สำเร็จ: '+ex.message,'err');}
   },
 
@@ -828,6 +884,93 @@ const A={
       this.sysCfg={...this.sysCfg,orgName:org,ccEmails,itManagerIds,itOfficerIds,emailTemplates};
       this.toast('บันทึกการตั้งค่าอีเมลสำเร็จ ✓','ok');
     }catch(ex){this.toast(ex.message,'err');}finally{this.unload();}
+  },
+
+  // ── Sign Notification Config ─────────────────────────────
+  signNotifRecipients: [],
+  signNotifSearch: '',
+
+  async saveSignNotifConfig(){
+    const cfg = {
+      enabled: document.getElementById('sn-enabled')?.checked || false,
+      subject: document.getElementById('sn-subj')?.value || '',
+      body: document.getElementById('sn-body')?.value || '',
+      recipients: this.signNotifRecipients
+    };
+    this.load('\u0e01\u0e33\u0e25\u0e31\u0e07\u0e1a\u0e31\u0e19\u0e17\u0e36\u0e01...');
+    try{
+      await GAS.saveSysCfg({signNotif: cfg});
+      this.sysCfg = {...this.sysCfg, signNotif: cfg};
+      this.toast('\u0e1a\u0e31\u0e19\u0e17\u0e36\u0e01\u0e01\u0e32\u0e23\u0e15\u0e31\u0e49\u0e07\u0e04\u0e48\u0e32\u0e41\u0e08\u0e49\u0e07\u0e40\u0e15\u0e37\u0e2d\u0e19\u0e2a\u0e33\u0e40\u0e23\u0e47\u0e08 \u2713','ok');
+    }catch(ex){this.toast(ex.message,'err');}finally{this.unload();}
+  },
+
+  renderSignNotifConfig(cfg){
+    const sn = cfg.signNotif || {};
+    const en = document.getElementById('sn-enabled');
+    if(en) en.checked = sn.enabled || false;
+    const subj = document.getElementById('sn-subj');
+    if(subj) subj.value = sn.subject || '[IT Equipment] \u0e25\u0e07\u0e19\u0e32\u0e21\u0e41\u0e25\u0e49\u0e27 \u2014 {doc_id} ({role})';
+    const body = document.getElementById('sn-body');
+    if(body) body.value = sn.body || '\u0e40\u0e23\u0e35\u0e22\u0e19 \u0e17\u0e35\u0e21 IT\n\n\u0e21\u0e35\u0e01\u0e32\u0e23\u0e25\u0e07\u0e19\u0e32\u0e21{role}\u0e43\u0e19\u0e40\u0e2d\u0e01\u0e2a\u0e32\u0e23 {doc_id} \u0e40\u0e23\u0e35\u0e22\u0e1a\u0e23\u0e49\u0e2d\u0e22\u0e41\u0e25\u0e49\u0e27\n\n\u0e1c\u0e39\u0e49\u0e25\u0e07\u0e19\u0e32\u0e21: {signer_name}\n\u0e27\u0e31\u0e19\u0e17\u0e35\u0e48: {signed_at}\n\u0e0a\u0e37\u0e48\u0e2d\u0e1c\u0e39\u0e49\u0e04\u0e23\u0e2d\u0e1a\u0e04\u0e23\u0e2d\u0e07: {owner_name}\n\u0e41\u0e1c\u0e19\u0e01: {dept}\n\u0e42\u0e23\u0e07\u0e1e\u0e22\u0e32\u0e1a\u0e32\u0e25: {hospital}\n\n\u0e02\u0e2d\u0e1a\u0e04\u0e38\u0e13\n{org_name}';
+    this.signNotifRecipients = Array.isArray(sn.recipients) ? [...sn.recipients] : [];
+    this.renderSnRecipients();
+  },
+
+  renderSnRecipients(){
+    const el = document.getElementById('sn-recip-list');
+    if(!el) return;
+    if(!this.signNotifRecipients.length){
+      el.innerHTML = '<div style="color:var(--ink3);font-size:11px;padding:8px">\u0e22\u0e31\u0e07\u0e44\u0e21\u0e48\u0e21\u0e35\u0e1c\u0e39\u0e49\u0e23\u0e31\u0e1a \u2014 \u0e04\u0e49\u0e19\u0e2b\u0e32\u0e41\u0e25\u0e30\u0e40\u0e1e\u0e34\u0e48\u0e21\u0e14\u0e49\u0e32\u0e19\u0e25\u0e48\u0e32\u0e07</div>';
+      return;
+    }
+    el.innerHTML = this.signNotifRecipients.map((r,i)=>`
+      <div class="sn-recip-tag">
+        <span class="sn-rt-name">${r.name}</span>
+        <span class="sn-rt-email">${r.email}</span>
+        <button class="sn-rt-remove" onclick="A.removeSnRecip(${i})" title="\u0e25\u0e1a">&#10005;</button>
+      </div>`).join('');
+  },
+
+  removeSnRecip(idx){
+    this.signNotifRecipients.splice(idx, 1);
+    this.renderSnRecipients();
+  },
+
+  snSearchTmr: null,
+  searchSnUser(){
+    clearTimeout(this.snSearchTmr);
+    const q = (document.getElementById('sn-search')?.value || '').trim();
+    const dd = document.getElementById('sn-search-dd');
+    if(!dd) return;
+    if(q.length < 1){ dd.classList.remove('on'); return; }
+    this.snSearchTmr = setTimeout(()=>{
+      const matches = (this.users || []).filter(u=>
+        (u.name||'').toLowerCase().includes(q.toLowerCase()) ||
+        (u.empId||'').toLowerCase().includes(q.toLowerCase()) ||
+        (u.email||'').toLowerCase().includes(q.toLowerCase())
+      ).slice(0,8);
+      if(!matches.length){ dd.innerHTML = '<div class="hi" style="color:var(--ink3)">\u0e44\u0e21\u0e48\u0e1e\u0e1a\u0e1c\u0e39\u0e49\u0e43\u0e0a\u0e49</div>'; dd.classList.add('on'); return; }
+      dd.innerHTML = matches.map(u=>{
+        const alreadyAdded = this.signNotifRecipients.some(r=>r.empId===u.empId);
+        return `<div class="hi ${alreadyAdded?'sn-added':''}" onclick="${alreadyAdded?'':'A.addSnRecip('+JSON.stringify(u).replace(/"/g,'&quot;')+')'}">` +
+          `<div class="hn">${u.name}${alreadyAdded?' <span style="color:var(--grn);font-size:10px">\u2713 \u0e40\u0e1e\u0e34\u0e48\u0e21\u0e41\u0e25\u0e49\u0e27</span>':''}</div>` +
+          `<div class="hm">${u.empId}${u.email?' | '+u.email:' | <span style="color:var(--amb)">\u0e44\u0e21\u0e48\u0e21\u0e35\u0e2d\u0e35\u0e40\u0e21\u0e25</span>'}</div></div>`;
+      }).join('');
+      dd.classList.add('on');
+    }, 250);
+  },
+
+  addSnRecip(user){
+    if(!user.email){ this.toast('\u0e1c\u0e39\u0e49\u0e43\u0e0a\u0e49\u0e19\u0e35\u0e49\u0e44\u0e21\u0e48\u0e21\u0e35\u0e2d\u0e35\u0e40\u0e21\u0e25\u0e43\u0e19\u0e23\u0e30\u0e1a\u0e1a','err'); return; }
+    if(this.signNotifRecipients.some(r=>r.empId===user.empId)){
+      this.toast('\u0e40\u0e1e\u0e34\u0e48\u0e21\u0e44\u0e1b\u0e41\u0e25\u0e49\u0e27','info'); return;
+    }
+    this.signNotifRecipients.push({empId:user.empId, name:user.name, email:user.email});
+    this.renderSnRecipients();
+    document.getElementById('sn-search').value = '';
+    document.getElementById('sn-search-dd').classList.remove('on');
+    this.toast('\u0e40\u0e1e\u0e34\u0e48\u0e21 '+user.name+' \u0e41\u0e25\u0e49\u0e27 \u2713','ok');
   },
 
   /* ── MAILTO ── */
@@ -1039,4 +1182,9 @@ document.addEventListener('click',e=>{
 });
 document.querySelectorAll('input[name="comp"]').forEach(r=>{
   r.addEventListener('change',()=>document.getElementById('misssec').style.display=r.value==='n'?'':'none');
+});
+// Mobile: tap overlay backdrop to close modal
+document.addEventListener('click', function(mev) {
+  if (mev.target.classList.contains('ov')) mev.target.style.display = 'none';
+  if (!mev.target.closest('.hw')) document.querySelectorAll('.hdd.on').forEach(function(d) { d.classList.remove('on'); });
 });
