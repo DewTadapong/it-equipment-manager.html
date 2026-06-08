@@ -164,8 +164,8 @@
             <div class="fg"><label>ชื่อ-นามสกุล *</label><input id="c-nm" placeholder="ชื่อ-นามสกุล"></div>
             <div class="fg"><label>วันที่ *</label><input id="c-dt" type="date"></div>
             <div class="fg"><label>โรงพยาบาล *</label><input id="c-hp" placeholder="โรงพยาบาล"></div>
-            <div class="fg"><label>แผนก *</label><input id="c-dp" placeholder="แผนก"></div>
-            <div class="fg"><label>รหัสแผนก</label><input id="c-dc" placeholder="รหัสแผนก"></div>
+            <div class="fg"><label>แผนก *</label><div class="hw"><input id="c-dp" placeholder="แผนก" oninput="A.sDept()" autocomplete="off"><div id="dpt-dd" class="hdd"></div></div></div>
+            <div class="fg"><label>รหัสแผนก</label><input id="c-dc" placeholder="รหัสแผนก" oninput="A.sDeptCode()" autocomplete="off"></div>
             <div class="fg"><label>เบอร์ติดต่อ</label><input id="c-ph" placeholder="เบอร์ติดต่อ"></div>
             <div class="fg full">
               <label>HOD * <span style="font-size:10px;color:var(--ink3)">(พิมพ์ค้นหาชื่อหรือรหัสพนักงาน)</span></label>
@@ -488,15 +488,16 @@
     <div class="mhd"><div class="mt" id="sign-ttl">ลงลายมือชื่อ</div><button class="mcl" onclick="A.cSign()">&#10005;</button></div>
     <div class="mbd">
       <div class="fg" style="margin-bottom:11px"><label id="sign-nlbl">ชื่อ *</label><input id="sign-n" placeholder="ชื่อ-นามสกุล"></div>
-      <div class="stabs"><button class="stab on" id="stab-draw" onclick="A.sTab('draw')">&#9997; วาด</button><button class="stab" id="stab-up" onclick="A.sTab('upload')">&#128193; อัปโหลด</button></div>
+      <div class="stabs"><button class="stab on" id="stab-draw" onclick="A.sTab('draw')">&#9997; วาด</button><button class="stab" id="stab-up" onclick="A.sTab('up')">&#128247; อัปโหลดรูป</button></div>
       <div class="tpane on" id="sp-draw"><div class="cvswrap"><canvas id="sig-cvs" height="155"></canvas></div><div style="display:flex;justify-content:flex-end;margin-top:5px"><button class="btn bh bsm" onclick="A.clrCvs('sig-cvs','sigCvs')">&#128465; ล้าง</button></div></div>
       <div class="tpane" id="sp-up">
-        <label for="sigf" class="uarea" style="display:block;cursor:pointer">
-          <input type="file" id="sigf" accept="image/*" style="position:absolute;opacity:0;width:1px;height:1px;overflow:hidden" onchange="A.upImg(event,'upSig','sig-prev','sig-prev-w')">
-          <div style="font-size:28px;margin-bottom:6px">&#128444;</div>
-          <div style="font-size:13px;font-weight:600;color:var(--ink2)">คลิกเพื่อเลือกรูปลายเซ็น</div>
-          <div style="font-size:11px;color:var(--ink3);margin-top:4px">JPG, PNG, GIF — ขนาดไม่เกิน 3MB</div>
-        </label>
+        <div id="sig-upload-label" style="text-align:center;padding:20px 0">
+          <div style="font-size:36px;margin-bottom:8px">&#128444;</div>
+          <div style="font-size:13px;font-weight:600;color:var(--ink2);margin-bottom:6px">อัปโหลดรูปลายเซ็น</div>
+          <div style="font-size:11px;color:var(--ink3);margin-bottom:14px">JPG, PNG, GIF — ไม่เกิน 3MB</div>
+          <label for="sigf" class="btn bp bsm" style="cursor:pointer;display:inline-flex">&#128247; เลือกไฟล์ลายเซ็น</label>
+          <input type="file" id="sigf" accept="image/*" style="display:none" onchange="A.upImg(event,'upSig','sig-prev','sig-prev-w')">
+        </div>
         <div id="sig-prev-w" style="display:none;text-align:center;margin-top:10px">
           <img id="sig-prev" src="" style="max-height:110px;max-width:100%;border:2px solid var(--bd);border-radius:var(--r2);padding:6px;background:#fff">
           <div style="margin-top:7px;display:flex;gap:6px;justify-content:center">
@@ -585,13 +586,17 @@
         </div>
         <div style="padding:14px;font-size:12px;line-height:1.9" id="mail-body-prev">-</div>
       </div>
+      <div style="padding:10px 12px;background:var(--prim);border-radius:var(--r);border:1px solid #a9cce3;font-size:11px;color:var(--ink2);margin-bottom:8px">
+        &#128231; <strong>ส่งผ่าน GAS:</strong> ระบบจะส่งอีเมลให้อัตโนมัติผ่าน Gmail ของ GAS Account — ผู้รับเห็นเป็นปุ่มลงนาม ไม่ใช่ลิงก์
+      </div>
       <div style="padding:10px 12px;background:var(--ambm);border-radius:var(--r);border:1px solid #fcd34d;font-size:11px;color:var(--ambt)">
-        &#9888; ระบบจะเปิด Email Client ของคุณพร้อมข้อมูลที่กรอกไว้ กด Send ใน Email Client เพื่อส่งจริง
+        &#9888; หรือเปิด Email Client ของคุณเองแล้วกด Send (ลิงก์ในเนื้อหา)
       </div>
     </div>
     <div class="mft">
       <button class="btn bh" onclick="A.cMail()">ยกเลิก</button>
-      <button class="btn bp" id="btn-open-mail" onclick="A.openMailClient()">&#128231; เปิด Email Client</button>
+      <button class="btn bh bsm" id="btn-open-mail" onclick="A.openMailClient()">&#128231; เปิด Email Client</button>
+      <button class="btn bp" id="btn-send-gas" onclick="A.sendViaGAS()">&#128232; ส่งผ่าน GAS (Gmail)</button>
     </div>
   </div>
 </div>

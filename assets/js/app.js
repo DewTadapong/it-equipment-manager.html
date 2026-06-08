@@ -98,6 +98,8 @@ const A={
     }catch{TPL.reset();}
     finally{A.unload();}
     this.loadSettings();
+    // Load depts for autocomplete (background, no await)
+    GAS.getDepts().then(d=>{this.depts=d;}).catch(()=>{});
     this.showPg('app');await this.loadDocs();this.sub('dash');
   },
 
@@ -153,14 +155,14 @@ const A={
     finally{this.unload();}
   },
 
-  renderStats(){
-    const d=this.docs;
+  renderStats(filteredDocs){
+    const d=filteredDocs||this.docs;
     const pend=d.filter(x=>['pending_it_officer','pending_it_manager','pending_recipient'].includes(x.status)).length;
     document.getElementById('stats').innerHTML=
       '<div class="st a"><div class="stn">'+d.length+'</div><div class="stl">\u0e17\u0e31\u0e49\u0e07\u0e2b\u0e21\u0e14</div></div>'+
       '<div class="st p"><div class="stn">'+pend+'</div><div class="stl">\u0e23\u0e2d\u0e14\u0e33\u0e40\u0e19\u0e34\u0e19\u0e01\u0e32\u0e23</div></div>'+
-      '<div class="st d"><div class="stn">'+d.filter(x=>x.status==='completed').length+'</div><div class="stl">\u0e04\u0e23\u0e1a\u0e16\u0e49\u0e27\u0e19</div></div>'+
-      '<div class="st r"><div class="stn">'+d.filter(x=>x.status==='returned').length+'</div><div class="stl">\u0e04\u0e37\u0e19\u0e41\u0e25\u0e49\u0e27</div></div>';
+      '<div class="st d"><div class="stn">'+d.filter(x=>x.status==='completed').length+'</div><div class="stl">\u0e2a\u0e48\u0e07\u0e21\u0e2d\u0e1a</div></div>'+
+      '<div class="st r"><div class="stn">'+d.filter(x=>x.status==='returned').length+'</div><div class="stl">\u0e23\u0e31\u0e1a\u0e04\u0e37\u0e19</div></div>';
   },
   filter(){
     const q=(document.getElementById('qi')?.value||'').toLowerCase();
@@ -177,19 +179,13 @@ const A={
     );
     if(s)list=list.filter(d=>d.status===s);
     const qDept=(document.getElementById('qd')?.value||'').toLowerCase();
-    if(qDept)list=list.filter(d=>(d.dept||'').toLowerCase().includes(qDept));
+    if(qDept)list=list.filter(d=>(d.dept||'').toLowerCase().includes(qDept)||(d.deptCode||'').toLowerCase().includes(qDept));
     list.sort((a,b)=>new Date(b.createdAt||0)-new Date(a.createdAt||0));
+    // Update stats based on filtered list
+    this.renderStats(list);
     const tb=document.getElementById('dtb');
     if(!list.length){tb.innerHTML='<tr><td colspan="7"><div class="empty"><div class="eic">&#128194;</div><p>\u0e44\u0e21\u0e48\u0e1e\u0e1a\u0e40\u0e2d\u0e01\u0e2a\u0e32\u0e23</p></div></td></tr>';return;}
-    tb.innerHTML=list.map(d=>'<tr class="tr" onclick="A.openDet(\''+d.id+'\')">'+
-      '<td><span style="font-family:\'IBM Plex Mono\',monospace;font-weight:700;font-size:11px">'+d.id+'</span></td>'+
-      '<td style="font-size:11px;color:var(--ink3)">'+this.fd(d.docDate||d.createdAt)+'</td>'+
-      '<td><strong style="font-size:12px">'+(d.name||'')+'</strong></td>'+
-      '<td><div style="font-size:11px">'+(d.hospital||'')+'</div><div style="font-size:10px;color:var(--ink3)">'+(d.dept||'')+'</div></td>'+
-      '<td><div style="font-size:11px">'+(d.hodName||'')+'</div><div style="font-size:10px;color:var(--ink3);font-family:monospace">'+(d.hodEmpId||'')+'</div></td>'+
-      '<td>'+this.sbadge(d.status)+'</td>'+
-      '<td><button class="btn bh bsm" onclick="event.stopPropagation();A.openDet(\''+d.id+'\')">\u0e14\u0e39 \u2192</button></td>'+
-    '</tr>').join('');
+    tb.innerHTML=list.map(d=>'<tr class="tr" onclick="A.openDet(\''+d.id+'\')">'+'<td><span style="font-family:\'IBM Plex Mono\',monospace;font-weight:700;font-size:11px">'+d.id+'</span></td>'+'<td style="font-size:11px;color:var(--ink3)">'+this.fd(d.docDate||d.createdAt)+'</td>'+'<td><strong style="font-size:12px">'+(d.name||'')+'</strong></td>'+'<td><div style="font-size:11px">'+(d.hospital||'')+'</div><div style="font-size:10px;color:var(--ink3)">'+(d.dept||'')+'</div></td>'+'<td><div style="font-size:11px">'+(d.hodName||'')+'</div><div style="font-size:10px;color:var(--ink3);font-family:monospace">'+(d.hodEmpId||'')+'</div></td>'+'<td>'+this.sbadge(d.status)+'</td>'+'<td><button class="btn bh bsm" onclick="event.stopPropagation();A.openDet(\''+d.id+'\')">ดู →</button></td>'+'</tr>').join('');
   },
   sbadge(s){
     const m={pending_it_officer:['ba','\u23f3 \u0e23\u0e2d IT Officer'],pending_it_manager:['bb','\u23f3 \u0e23\u0e2d IT Manager'],pending_recipient:['bpu','\u23f3 \u0e23\u0e2d\u0e1c\u0e39\u0e49\u0e23\u0e31\u0e1a'],completed:['bgg','\u2713 \u0e2a\u0e48\u0e07\u0e21\u0e2d\u0e1a'],returned:['bgr','\u21a9 \u0e23\u0e31\u0e1a\u0e04\u0e37\u0e19']};
@@ -201,6 +197,8 @@ const A={
     ['c-nm','c-hp','c-dp','c-dc','c-ph','c-pu','c-hq'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
     document.getElementById('c-he').value='';document.getElementById('c-hn').value='';
     document.getElementById('hsel').style.display='none';this.hodSel=null;
+    // Clear dept autocomplete
+    const ddd=document.getElementById('dpt-dd');if(ddd)ddd.classList.remove('on');
     document.getElementById('c-dt').value=new Date().toISOString().slice(0,10);
     document.querySelectorAll('input[name="dtype"]')[0].checked=true;this.setDT('deliver');
     document.querySelectorAll('input[name="comp"]')[0].checked=true;
@@ -261,6 +259,33 @@ const A={
     document.getElementById('hsel').style.display='';
   },
   clrHOD(){this.hodSel=null;['c-hq','c-he','c-hn'].forEach(id=>document.getElementById(id).value='');document.getElementById('hsel').style.display='none';},
+
+  // ── Department autocomplete ──────────────────────
+  deptTmr:null,
+  sDept(){
+    clearTimeout(this.deptTmr);
+    const q=(document.getElementById('c-dp')?.value||'').trim().toLowerCase();
+    const dd=document.getElementById('dpt-dd');if(!dd)return;
+    if(!q){dd.classList.remove('on');return;}
+    const matches=(this.depts||[]).filter(d=>(d.name||'').toLowerCase().includes(q)||(d.code||'').toLowerCase().includes(q)).slice(0,8);
+    if(!matches.length){dd.classList.remove('on');return;}
+    dd.innerHTML=matches.map(d=>`<div class="hi" onclick="A.selDept('${d.name}','${d.code||''}')"><div class="hn">${d.name}</div><div class="hm">${d.code?'รหัส: '+d.code:''}</div></div>`).join('');
+    dd.classList.add('on');
+  },
+  selDept(name,code){
+    const dpEl=document.getElementById('c-dp');if(dpEl)dpEl.value=name;
+    const dcEl=document.getElementById('c-dc');if(dcEl)dcEl.value=code;
+    const dd=document.getElementById('dpt-dd');if(dd)dd.classList.remove('on');
+  },
+  sDeptCode(){
+    const q=(document.getElementById('c-dc')?.value||'').trim().toLowerCase();
+    const dd=document.getElementById('dpt-dd');if(!dd)return;
+    if(!q){dd.classList.remove('on');return;}
+    const matches=(this.depts||[]).filter(d=>(d.code||'').toLowerCase().includes(q)||(d.name||'').toLowerCase().includes(q)).slice(0,8);
+    if(!matches.length){dd.classList.remove('on');return;}
+    dd.innerHTML=matches.map(d=>`<div class="hi" onclick="A.selDept('${d.name}','${d.code||''}')"><div class="hn">${d.name}</div><div class="hm">${d.code?'รหัส: '+d.code:''}</div></div>`).join('');
+    dd.classList.add('on');
+  },
 
   async createDoc(){
     const name=document.getElementById('c-nm').value.trim(),hosp=document.getElementById('c-hp').value.trim(),dept=document.getElementById('c-dp').value.trim(),date=document.getElementById('c-dt').value;
@@ -365,8 +390,6 @@ const A={
     document.getElementById('sign-n').value='';
     const sigprev=document.getElementById('sig-prev-w');if(sigprev)sigprev.style.display='none';
     const siginp=document.getElementById('sigf');if(siginp)siginp.value='';
-    const siglbl=document.querySelector('label[for="sigf"]');
-    if(siglbl)siglbl.style.display='block';
     this.sigCvs=null;this.upSig=null;
     this.sTab('draw');
     document.getElementById('m-sign').style.display='flex';
@@ -376,15 +399,16 @@ const A={
   sTab(t){
     this.sigTab=t;
     ['draw','up'].forEach(tt=>{
-      document.getElementById('sp-'+tt).classList.toggle('on',tt===t);
-      document.getElementById('stab-'+tt).classList.toggle('on',tt===t);
+      document.getElementById('sp-'+tt)?.classList.toggle('on',tt===t);
+      document.getElementById('stab-'+tt)?.classList.toggle('on',tt===t);
     });
     if(t==='draw'&&!this.sigCvs)setTimeout(()=>this.initCvs('sig-cvs','sigCvs'),80);
-    // Show/hide upload label correctly
-    const lbl=document.querySelector('label[for="sigf"]');
-    if(lbl&&lbl.classList.contains('uarea')){
-      lbl.style.display=t==='up'&&!this.upSig?'block':'none';
-      if(t!=='up')lbl.style.display='';
+    // Sync upload label visibility
+    if(t==='up'){
+      const lbl=document.getElementById('sig-upload-label');
+      const prv=document.getElementById('sig-prev-w');
+      if(lbl)lbl.style.display=this.upSig?'none':'';
+      if(prv)prv.style.display=this.upSig?'block':'none';
     }
   },
   rTab(t){
@@ -405,9 +429,14 @@ const A={
       if(prev)prev.src=ev.target.result;
       const wrap=document.getElementById(wrapId);
       if(wrap)wrap.style.display='block';
-      // hide the upload area label when preview shown
-      const lbl=document.querySelector('label[for="'+e.target.id+'"]');
-      if(lbl&&lbl.classList.contains('uarea'))lbl.style.display='none';
+      // hide upload area - handle both label.uarea and div#sig-upload-label
+      if(e.target.id==='sigf'){
+        const ulbl=document.getElementById('sig-upload-label');
+        if(ulbl)ulbl.style.display='none';
+      }else{
+        const lbl=document.querySelector('label[for="'+e.target.id+'"]');
+        if(lbl&&lbl.classList.contains('uarea'))lbl.style.display='none';
+      }
     };
     fr.onerror=()=>this.toast('อ่านไฟล์ไม่สำเร็จ','err');
     fr.readAsDataURL(f);
@@ -417,8 +446,13 @@ const A={
     const inp=document.getElementById(inputId);if(inp)inp.value='';
     const wrap=document.getElementById(wrapId);if(wrap)wrap.style.display='none';
     // re-show upload label
-    const lbl=document.querySelector('label[for="'+inputId+'"]');
-    if(lbl&&lbl.classList.contains('uarea'))lbl.style.display='block';
+    if(inputId==='sigf'){
+      const ulbl=document.getElementById('sig-upload-label');
+      if(ulbl)ulbl.style.display='';
+    }else{
+      const lbl=document.querySelector('label[for="'+inputId+'"]');
+      if(lbl&&lbl.classList.contains('uarea'))lbl.style.display='block';
+    }
   },
   initCvs(id,stKey){
     const old=document.getElementById(id);if(!old)return;
@@ -870,6 +904,25 @@ const A={
     window.location.href=mailto;
     this.cMail();
     this.toast('เปิด Email Client แล้ว — กด Send ในโปรแกรมอีเมลของคุณ','info');
+  },
+
+  async sendViaGAS(){
+    if(!this._mailTarget)return;
+    const{to,cc,subj,body,signUrl}=this._mailTarget;
+    if(!to){this.toast('ไม่พบอีเมลผู้รับ — ตรวจสอบ User และ Email Config','err');return;}
+    const btn=document.getElementById('btn-send-gas');
+    if(btn){btn.disabled=true;btn.textContent='⏳ กำลังส่ง...';}
+    try{
+      // Replace plain URL in body with HTML button for email
+      const htmlBody=body.replace(signUrl,`<a href="${signUrl}" style="display:inline-block;padding:10px 20px;background:#1a5276;color:#fff;border-radius:6px;text-decoration:none;font-weight:700">📝 คลิกเพื่อลงนาม</a>`).replace(/\n/g,'<br>');
+      await GAS.post({action:'sendMail',to,cc,subject:subj,body,htmlBody});
+      this.cMail();
+      this.toast('✓ ส่งอีเมลสำเร็จ','ok');
+    }catch(ex){
+      this.toast('ส่งอีเมลไม่สำเร็จ: '+ex.message,'err');
+    }finally{
+      if(btn){btn.disabled=false;btn.textContent='📨 ส่งอีเมลผ่าน GAS';}
+    }
   },
 
   /* ── AFTER SIGN auto reply ── */

@@ -1,5 +1,5 @@
 /**
- * IT Equipment Manager — Google Apps Script v9
+ * IT Equipment Manager — Google Apps Script v10
  * Features:
  *   - Configurable Folder ID (stored in Script Properties)
  *   - All files in one Drive folder
@@ -8,7 +8,20 @@
  *   - saveSysCfg: บันทึก email config, permissions, folder
  *   - getITUsers: ดึง IT Manager/Officer สำหรับ Email checklist
  *   - testFolder: ทดสอบ Folder ID ว่า GAS เข้าถึงได้
+ *   - sendMail: ส่งอีเมล HTML ผ่าน MailApp (GAS account)
+ *
+ * Gmail scope required: run testSendMail() once in Apps Script editor
+ * to authorize, then re-deploy as new version.
  */
+
+/**
+ * RUN THIS ONCE in Apps Script editor to authorize Gmail/MailApp scope:
+ * Open Apps Script → Run → testSendMail → Grant permission
+ */
+function testSendMail() {
+  MailApp.getRemainingDailyQuota(); // triggers OAuth consent for send_mail scope
+  Logger.log('MailApp authorized. Remaining quota: ' + MailApp.getRemainingDailyQuota());
+}
 
 const F_USERS  = '_users.json';
 const F_SESS   = '_sessions.json';
@@ -115,6 +128,7 @@ function doPost(e) {
     if (act==='setFolderId')  return R(superUser(u) && (setFolderId(b.folderId), {ok:true}));
     if (act==='importAll')    return R(superUser(u) && importAll(b.data));
     if (act==='changePw')     return R(pwChange(u, b.oldPw, b.newPw));
+    if (act==='sendMail')     return R(sendMail(b));
     return R({error:'unknown:'+act});
   } catch(ex) { return R({error:ex.toString()}); }
 }
@@ -287,4 +301,44 @@ function importAll(data) {
   if(data.template) writeJ(F_TPL,data.template);
   if(data.config)   writeJ(F_CFG,data.config);
   return {ok:true,...r};
+}
+
+// ── SEND EMAIL (via MailApp) ──────────────────────────────────
+function sendMail(b) {
+  const to = b.to || '';
+  if (!to) throw new Error('ไม่มีอีเมลผู้รับ');
+  const subject = b.subject || '[IT Equipment] แจ้งเตือน';
+  const plainBody = b.body || '';
+  const htmlBody = b.htmlBody || plainBody.replace(/\n/g,'<br>');
+
+  // Build full HTML email
+  const cfg = sysGet();
+  const orgName = cfg.orgName || 'IT Department';
+  const fullHtml = `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px">
+    <div style="background:#1a5276;color:#fff;padding:16px 20px;border-radius:8px 8px 0 0">
+      <h2 style="margin:0;font-size:16px">&#128187; IT Equipment Manager</h2>
+      <p style="margin:4px 0 0;font-size:12px;opacity:.8">${orgName}</p>
+    </div>
+    <div style="background:#fff;border:1px solid #ddd;border-top:none;padding:20px;border-radius:0 0 8px 8px;line-height:1.7">
+      ${htmlBody}
+    </div>
+    <p style="font-size:10px;color:#999;margin-top:12px;text-align:center">ส่งจากระบบ IT Equipment Manager — ${new Date().toLocaleString('th-TH')}</p>
+  </div>`;
+
+  const options = { htmlBody: fullHtml, name: orgName + ' (IT Equipment)' };
+  if (b.cc && b.cc.trim()) options.cc = b.cc;
+
+  // Send to multiple recipients (split by comma)
+  const toList = to.split(',').map(s=>s.trim()).filter(Boolean);
+  toList.forEach(addr => {
+    MailApp.sendEmail(addr, subject, plainBody, options);
+  });
+
+  // Log sent mail
+  const log = readJ('_maillog.json', []);
+  log.unshift({at:new Date().toISOString(),to,subject,sentBy:'GAS'});
+  if(log.length>200) log.splice(200);
+  writeJ('_maillog.json', log);
+
+  return {ok:true, sent:toList.length};
 }
