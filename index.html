@@ -116,8 +116,10 @@
       <div class="sbi" id="sb-users" onclick="A.sub('users')" style="display:none">&#128101; จัดการผู้ใช้</div>
       <div class="sbi" id="sb-tpl"  onclick="A.sub('tpl')"  style="display:none">&#128506; Template Designer</div>
       <div class="sbi" id="sb-dept" onclick="A.sub('dept')" style="display:none">&#127970; แผนก (Department)</div>
+      <div class="sbi" id="sb-inventory" onclick="A.sub('inventory')" style="display:none">&#128187; จัดการเครื่องสำรอง</div>
       <div class="sbi" id="sb-io"      onclick="A.sub('io')"      style="display:none">&#128190; Import / Export</div>
       <div class="sbi" id="sb-settings" onclick="A.sub('settings')" style="display:none">&#9881; การตั้งค่าระบบ</div>
+      <div class="sbi" id="sb-audit" onclick="A.sub('audit')" style="display:none">&#128220; ประวัติการใช้งาน (Audit Log)</div>
       <div class="sbs" id="sb-sys-sec" style="display:none">ระบบ</div>
       <div class="sbi" id="sb-gas-cfg" onclick="A.showPg('setup')" style="display:none">&#9881; GAS Config</div>
     </nav>
@@ -237,6 +239,12 @@
           </table></div>
         </div>
       </div>
+
+      <!-- AUDIT LOG (Lazy loaded) -->
+      <div id="s-audit" style="display:none"></div>
+      
+      <!-- INVENTORY (Lazy loaded) -->
+      <div id="s-inventory" style="display:none"></div>
 
       <!-- SETTINGS -->
       <div id="s-settings" style="display:none">
@@ -447,6 +455,29 @@
             <button class="btn bh" onclick="A.loadSettings()">&#128260; โหลดค่าปัจจุบัน</button>
           </div>
         </div>
+      <!-- Card 4: Auto Reminder Config -->
+        <div class="card">
+          <div class="sh"><span class="si">&#9200;</span>ตั้งค่าระบบทวงถามอัตโนมัติ (Auto-Reminder)</div>
+          <div style="padding:9px 11px;background:var(--prim);border-radius:var(--r);border:1px solid #a9cce3;font-size:11px;color:var(--ink2);margin-bottom:13px">
+            <strong>การทำงาน:</strong> ระบบจะตรวจสอบทุกเช้าเวลา 8:00 น. หากมีเอกสารที่สถานะ "รอลงนาม" และถูกสร้างขึ้นมานานกว่าจำนวนวันที่กำหนด ระบบจะส่งอีเมลแจ้งเตือนอัตโนมัติ<br><br>
+            <span style="color:var(--red)">* จำเป็นต้องกด <strong>"ติดตั้ง Trigger"</strong> ในครั้งแรกเพื่อเริ่มการทำงานอัตโนมัติ</span>
+          </div>
+          
+          <div class="fg" style="margin-bottom:12px">
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;font-weight:600">
+              <input type="checkbox" id="rmd-enabled" style="accent-color:var(--pri);width:16px;height:16px"> เปิดใช้งาน Auto-Reminder
+            </label>
+          </div>
+          <div class="fg" style="max-width:200px">
+            <label>แจ้งเตือนเมื่อเอกสารค้างเกินกี่วัน?</label>
+            <input type="number" id="rmd-days" min="1" step="1" placeholder="เช่น 3">
+          </div>
+          
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:16px;align-items:center">
+            <button class="btn bp" onclick="A.saveReminderConfig()">&#128190; บันทึกการตั้งค่า</button>
+            <button class="btn bh" onclick="A.installReminderTrigger()">&#9881; ติดตั้ง Trigger</button>
+          </div>
+        </div>
 
       </div><!-- /s-settings -->
 
@@ -618,6 +649,14 @@
         </div>
       </div>
       <div class="fg" style="margin-top:9px"><label>หมายเหตุ</label><textarea id="ret-note" rows="2" placeholder="หมายเหตุ..."></textarea></div>
+      <div class="fg full" style="margin-top:11px">
+        <label>แนบรูปภาพสภาพอุปกรณ์ <span style="font-size:10px;color:var(--ink3)">(สูงสุด 3 รูป)</span></label>
+        <div style="display:flex;gap:8px;flex-wrap:wrap" id="ret-photos-wrap">
+          <label for="ret-photo-upload" class="btn bh bsm" style="cursor:pointer;margin:0">&#128247; เพิ่มรูปภาพ</label>
+          <input type="file" id="ret-photo-upload" accept="image/*" multiple style="display:none" onchange="A.handleReturnPhotos(event)">
+        </div>
+        <div id="ret-photos-list" style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap"></div>
+      </div>
     </div>
     <div class="mft"><button class="btn bh" onclick="A.cRet()">ยกเลิก</button><button class="btn bgrn" id="btn-cret" onclick="A.confirmRet()">&#10003; ยืนยัน</button></div>
   </div>
@@ -707,6 +746,8 @@
 <script src="assets/js/config.js"></script>
 <script src="assets/js/template.js"></script>
 <script src="assets/js/designer.js"></script>
+<script src="assets/js/audit.js"></script>
+<script src="assets/js/inventory.js"></script>
 <script src="assets/js/app.js"></script>
 
 <!-- Bootstrap: เริ่มต้นแอป -->

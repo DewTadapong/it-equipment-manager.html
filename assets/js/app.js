@@ -83,8 +83,10 @@ const A={
       document.getElementById('sb-users').style.display='';
       document.getElementById('sb-tpl').style.display='';
       document.getElementById('sb-dept').style.display='';
+      document.getElementById('sb-inventory').style.display='';
       document.getElementById('sb-io').style.display='';
       document.getElementById('sb-settings').style.display='';
+      document.getElementById('sb-audit').style.display='';
       document.getElementById('sb-sys-sec').style.display='';
       document.getElementById('sb-gas-cfg').style.display='';
       const dg=document.getElementById('dd-gas-btn');if(dg)dg.style.display='';
@@ -126,29 +128,44 @@ const A={
     window.scrollTo(0,0);
   },
   curPage: '',
-  sub(name){
+  async sub(name){
     this.curPage = name;
     if(name === 'dash') this.startPoll(); else this.stopPoll();
-    ['dash','create','detail','users','dept','io','settings','tpl'].forEach(s=>{const el=document.getElementById('s-'+s);if(el)el.style.display=s===name?'':'none';});
-    ['sb-dash','sb-create','sb-users','sb-dept','sb-io','sb-settings','sb-tpl'].forEach(id=>{const el=document.getElementById(id);if(el)el.classList.remove('on');});
+    ['dash','create','detail','users','dept','io','settings','tpl','audit','inventory'].forEach(s=>{const el=document.getElementById('s-'+s);if(el)el.style.display=s===name?'':'none';});
+    ['sb-dash','sb-create','sb-users','sb-dept','sb-io','sb-settings','sb-tpl','sb-audit','sb-inventory'].forEach(id=>{const el=document.getElementById(id);if(el)el.classList.remove('on');});
     const si=document.getElementById('sb-'+name);if(si)si.classList.add('on');
-    if(name==='dash'){this.renderStats();this.filter();}
+    
+    // Lazy load components
+    if(name==='audit') {
+      await this.loadComponent('s-audit', 'pages/audit.html');
+      if(window.Audit) Audit.loadLogs();
+    }
+    else if(name==='inventory') {
+      await this.loadComponent('s-inventory', 'pages/inventory.html');
+      if(window.INV) INV.loadData();
+    }
+    else if(name==='dash'){this.renderStats();this.filter();}
     else if(name==='create')this.resetCreate();
     else if(name==='users')this.loadUsers();
     else if(name==='dept')this.loadDepts();
     else if(name==='io'){}
     else if(name==='settings')this.loadSettings();
     else if(name==='tpl'){
-      // init designer after DOM is visible
-      setTimeout(()=>{
-        const img=document.getElementById('tfc-bg');
-        img.src=TPL.bgSrc;
-        const go=()=>TDE.init();
-        if(img.complete&&img.naturalWidth>0)go();
-        else img.onload=go;
-      },50);
+      setTimeout(()=>{if(window.TDE&&document.getElementById('s-tpl').style.display!=='none')TDE.init();},50);
     }
     window.scrollTo(0,0);
+  },
+
+  async loadComponent(id, url) {
+    const el = document.getElementById(id);
+    if(el && !el.dataset.loaded) {
+      try {
+        const res = await fetch(url);
+        const html = await res.text();
+        el.innerHTML = html;
+        el.dataset.loaded = '1';
+      } catch(e) { console.warn('Failed to load', url); }
+    }
   },
 
   async loadDocs(){
@@ -343,7 +360,16 @@ const A={
     }).join('');
     let retSec='';
     if(doc.status==='completed'&&canAct)retSec='<div class="rbar"><h4 style="font-size:12px;font-weight:700;margin-bottom:4px">&#8617; \u0e23\u0e31\u0e1a\u0e04\u0e37\u0e19\u0e2d\u0e38\u0e1b\u0e01\u0e23\u0e13\u0e4c</h4><button class="btn bp bsm" style="margin-top:4px" onclick="A.openRet(\''+doc.id+'\')">&#8617; \u0e1a\u0e31\u0e19\u0e17\u0e36\u0e01\u0e23\u0e31\u0e1a\u0e04\u0e37\u0e19</button></div>';
-    else if(doc.status==='returned'&&doc.returnInfo){const ri=doc.returnInfo;retSec='<div class="rdone"><span style="font-size:18px">&#10004;</span><div><div style="font-weight:700;color:var(--grnt);font-size:12px">\u0e23\u0e31\u0e1a\u0e04\u0e37\u0e19\u0e41\u0e25\u0e49\u0e27</div><div style="font-size:11px">\u0e42\u0e14\u0e22: <strong>'+ri.itName+'</strong> | '+this.fdt(ri.at)+'</div></div></div>';}
+    else if(doc.status==='returned'&&doc.returnInfo){
+      const ri=doc.returnInfo;
+      let pht='';
+      if(ri.photos && ri.photos.length) {
+        pht = '<div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">' + 
+              ri.photos.map(p => '<a href="'+p+'" target="_blank"><img src="'+p+'" style="height:60px;border-radius:4px;border:1px solid var(--bd2)"></a>').join('') + 
+              '</div>';
+      }
+      retSec='<div class="rdone"><span style="font-size:18px">&#10004;</span><div style="flex:1"><div style="font-weight:700;color:var(--grnt);font-size:12px">\u0e23\u0e31\u0e1a\u0e04\u0e37\u0e19\u0e41\u0e25\u0e49\u0e27</div><div style="font-size:11px">\u0e42\u0e14\u0e22: <strong>'+ri.itName+'</strong> | '+this.fdt(ri.at)+'</div>'+(ri.note?'<div style="font-size:11px;margin-top:4px;color:var(--ink2)"><strong>หมายเหตุ:</strong> '+ri.note+'</div>':'')+pht+'</div></div>';
+    }
     document.getElementById('det-body').innerHTML=
       (doc.status==='returned'?retSec:'')+
       '<div class="card">'+
@@ -536,14 +562,83 @@ const A={
     setTimeout(()=>this.initCvs('ret-cvs','retCvs'),100);
   },
   cRet(){document.getElementById('m-ret').style.display='none';},
+  
+  retPhotos: [],
+  async handleReturnPhotos(event) {
+    const files = event.target.files;
+    if(!files || !files.length) return;
+    this.load('กำลังประมวลผลรูปภาพ...');
+    try {
+      for(let i=0; i<files.length; i++) {
+        if(this.retPhotos.length >= 3) {
+          this.toast('แนบได้สูงสุด 3 รูป','err'); break;
+        }
+        const file = files[i];
+        if(!file.type.startsWith('image/')) continue;
+        const b64 = await this.resizeImage(file, 800, 800);
+        this.retPhotos.push(b64);
+      }
+      this.renderRetPhotos();
+    } catch(e) {
+      this.toast('ประมวลผลรูปภาพล้มเหลว', 'err');
+    } finally {
+      this.unload();
+      event.target.value = '';
+    }
+  },
+  renderRetPhotos() {
+    const c = document.getElementById('ret-photos-list');
+    if(!c) return;
+    c.innerHTML = this.retPhotos.map((b64, i) => `
+      <div style="position:relative;width:60px;height:60px;border-radius:6px;border:1px solid var(--bd2);overflow:hidden;background:#f5f5f5">
+        <img src="${b64}" style="width:100%;height:100%;object-fit:cover">
+        <div style="position:absolute;top:2px;right:2px;background:var(--red);color:#fff;font-size:9px;width:16px;height:16px;border-radius:50%;text-align:center;line-height:16px;cursor:pointer" onclick="A.removeRetPhoto(${i})">&#10005;</div>
+      </div>
+    `).join('');
+  },
+  removeRetPhoto(i) {
+    this.retPhotos.splice(i, 1);
+    this.renderRetPhotos();
+  },
+  resizeImage(file, maxWidth, maxHeight) {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      const url = URL.createObjectURL(file);
+      img.onload = () => {
+        let w = img.width, h = img.height;
+        if(w > maxWidth) { h = h * (maxWidth / w); w = maxWidth; }
+        if(h > maxHeight) { w = w * (maxHeight / h); h = maxHeight; }
+        const cvs = document.createElement('canvas');
+        cvs.width = w; cvs.height = h;
+        const ctx = cvs.getContext('2d');
+        ctx.drawImage(img, 0, 0, w, h);
+        URL.revokeObjectURL(url);
+        resolve(cvs.toDataURL('image/jpeg', 0.7));
+      };
+      img.onerror = reject;
+      img.src = url;
+    });
+  },
+
   async confirmRet(){
     const itName=document.getElementById('ret-n').value.trim();if(!itName){this.toast('\u0e01\u0e23\u0e38\u0e13\u0e32\u0e23\u0e30\u0e1a\u0e38\u0e0a\u0e37\u0e48\u0e2d IT \u0e1c\u0e39\u0e49\u0e23\u0e31\u0e1a\u0e04\u0e37\u0e19','err');return;}
     let sig=null;if(this.retTab==='draw'){const c=document.getElementById('ret-cvs');if(!this.isBlank(c))sig=c.toDataURL('image/jpeg',.85);}else sig=this.retSig;
-    const ri={itName,sig,note:document.getElementById('ret-note').value.trim(),at:new Date().toISOString()};
-    const doc=this.docLocal(this.curDoc);
     const btn=document.getElementById('btn-cret');btn.disabled=true;btn.textContent='\u23f3...';
-    try{await GAS.updateDoc(this.curDoc,{returnInfo:ri,status:'returned'});doc.returnInfo=ri;doc.status='returned';this.cRet();this.renderDet(doc);this.renderStats();this.toast('\u0e1a\u0e31\u0e19\u0e17\u0e36\u0e01\u0e23\u0e31\u0e1a\u0e04\u0e37\u0e19\u0e2a\u0e33\u0e40\u0e23\u0e47\u0e08 \u2713','ok');this.sendSignNotification(doc,'returned',itName);}
-    catch(ex){this.toast(ex.message,'err');}finally{btn.disabled=false;btn.textContent='\u2713 \u0e22\u0e37\u0e19\u0e22\u0e31\u0e19';}
+    try{
+      let photoUrls = [];
+      if(this.retPhotos && this.retPhotos.length > 0) {
+        this.load('กำลังอัปโหลดรูปภาพหลักฐาน...');
+        for(let i=0; i<this.retPhotos.length; i++) {
+           const res = await GAS.post({action:'uploadImage', b64: this.retPhotos[i]});
+           if(res.url) photoUrls.push(res.url);
+        }
+      }
+      this.load('กำลังบันทึกข้อมูล...');
+      const ri={itName,sig,note:document.getElementById('ret-note').value.trim(),photos:photoUrls,at:new Date().toISOString()};
+      const doc=this.docLocal(this.curDoc);
+      await GAS.updateDoc(this.curDoc,{returnInfo:ri,status:'returned'});doc.returnInfo=ri;doc.status='returned';this.cRet();this.renderDet(doc);this.renderStats();this.toast('\u0e1a\u0e31\u0e19\u0e17\u0e36\u0e01\u0e23\u0e31\u0e1a\u0e04\u0e37\u0e19\u0e2a\u0e33\u0e40\u0e23\u0e47\u0e08 \u2713','ok');this.sendSignNotification(doc,'returned',itName);
+    }
+    catch(ex){this.toast(ex.message,'err');}finally{btn.disabled=false;btn.textContent='\u2713 \u0e22\u0e37\u0e19\u0e22\u0e31\u0e19'; this.unload();}
   },
 
   async sendSignNotification(doc, sigRole, signerName){
@@ -718,6 +813,10 @@ const A={
       this.renderITChecklists(sysCfg);
       // Sign notification
       this.renderSignNotifConfig(sysCfg);
+      // Auto Reminder
+      const rmd = sysCfg.reminder || {};
+      const re=document.getElementById('rmd-enabled'); if(re) re.checked=rmd.enabled||false;
+      const rd=document.getElementById('rmd-days'); if(rd) rd.value=rmd.days||3;
     }catch(ex){this.toast('โหลดการตั้งค่าไม่สำเร็จ: '+ex.message,'err');}
   },
 
@@ -953,6 +1052,32 @@ const A={
       this.sysCfg = {...this.sysCfg, signNotif: cfg};
       this.toast('\u0e1a\u0e31\u0e19\u0e17\u0e36\u0e01\u0e01\u0e32\u0e23\u0e15\u0e31\u0e49\u0e07\u0e04\u0e48\u0e32\u0e41\u0e08\u0e49\u0e07\u0e40\u0e15\u0e37\u0e2d\u0e19\u0e2a\u0e33\u0e40\u0e23\u0e47\u0e08 \u2713','ok');
     }catch(ex){this.toast(ex.message,'err');}finally{this.unload();}
+  },
+
+  async saveReminderConfig() {
+    const cfg = {
+      enabled: document.getElementById('rmd-enabled')?.checked || false,
+      days: document.getElementById('rmd-days')?.value || 3
+    };
+    this.load('กำลังบันทึก...');
+    try {
+      await GAS.saveSysCfg({reminder: cfg});
+      this.sysCfg = {...this.sysCfg, reminder: cfg};
+      this.toast('บันทึกการตั้งค่าแจ้งเตือนสำเร็จ ✓','ok');
+    } catch(ex){this.toast(ex.message,'err');}finally{this.unload();}
+  },
+  
+  async installReminderTrigger() {
+    if(!confirm('ติดตั้งระบบทำงานอัตโนมัติ?\n\n* หากยังไม่ได้อนุญาตการทำงานของ Script ระบบอาจจะแจ้ง Error ได้\n(ต้องเปิด Apps Script Editor แล้วสั่ง Run testAuth ก่อน)')) return;
+    this.load('กำลังติดตั้ง Trigger...');
+    try {
+      await GAS.post({action:'installReminderTrigger'});
+      this.toast('ติดตั้งสำเร็จ ✓','ok');
+    } catch(ex) {
+      alert('ติดตั้งไม่สำเร็จ: ' + ex.message);
+    } finally {
+      this.unload();
+    }
   },
 
   renderSignNotifConfig(cfg){

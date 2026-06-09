@@ -15,12 +15,13 @@
  */
 
 /**
- * RUN THIS ONCE in Apps Script editor to authorize Gmail/MailApp scope:
- * Open Apps Script → Run → testSendMail → Grant permission
+ * RUN THIS ONCE in Apps Script editor to authorize Gmail/MailApp & Triggers scope:
+ * Open Apps Script → Run → testAuth → Grant permission
  */
-function testSendMail() {
+function testAuth() {
   MailApp.getRemainingDailyQuota(); // triggers OAuth consent for send_mail scope
-  Logger.log('MailApp authorized. Remaining quota: ' + MailApp.getRemainingDailyQuota());
+  ScriptApp.getProjectTriggers(); // triggers OAuth consent for ScriptApp
+  Logger.log('Authorized! Remaining Mail quota: ' + MailApp.getRemainingDailyQuota());
 }
 
 const F_USERS  = '_users.json';
@@ -28,6 +29,9 @@ const F_SESS   = '_sessions.json';
 const F_TPL    = '_template.json';
 const F_DEPTS  = '_depts.json';
 const F_CFG    = '_config.json';   // system config incl. folderId, emailCfg, permissions
+const F_AUDIT  = '_audit.json';
+const F_INVENTORY = '_inventory.json';
+const F_BORROWS = '_borrows.json';
 
 // ── FOLDER ────────────────────────────────────────────────────
 function getFolder() {
@@ -102,6 +106,7 @@ function doGet(e) {
 
     const u = sessCheck(p.token);
     if (act==='getDocs')      return R({docs:docsForUser(u)});
+    if (act==='getAuditLogs') return R(superUser(u) && {logs: readJ(F_AUDIT, [])});
     if (act==='searchUsers')  return R({users:usersSearch(p.q||'')});
     if (act==='getUsers')     return R({users:(u.role==='admin'||u.role==='it_staff'||u.role==='it_manager')&&usersAll()});
     if (act==='exportAll')    return R(superUser(u)&&exportAll());
@@ -113,24 +118,31 @@ function doPost(e) {
   try {
     const b = JSON.parse(e.postData.contents), act = b.action;
     if (act==='login')   return R(login(b.empId, b.pw));
-    if (act==='signDoc') return R(docSign(b.docId, b.role, b.sig));
+    if (act==='signDoc') return R((logAction({empId:'SYSTEM',name:'Signer',role:b.role}, 'signDoc', b.docId), docSign(b.docId, b.role, b.sig)));
 
     const u = sessCheck(b.token);
-    if (act==='saveDoc')      return R(canEdit(u) && docSave(b.doc));
-    if (act==='updateDoc')    return R(canEdit(u) && docUpdate(b.id, b.patch));
-    if (act==='deleteDoc')    return R(superUser(u) && docDel(b.id));
-    if (act==='saveUser')     return R(superUser(u) && userSave(b.user));
-    if (act==='delUser')      return R(superUser(u) && userDel(b.id));
-    if (act==='saveTemplate') return R(superUser(u) && writeJ(F_TPL, b.tpl) || {ok:true});
-    if (act==='saveDept')     return R(superUser(u) && deptSave(b.dept));
-    if (act==='delDept')      return R(superUser(u) && deptDel(b.id));
-    if (act==='saveSysCfg')   return R(superUser(u) && sysSave(b.cfg));
-    if (act==='setFolderId')  return R(superUser(u) && (setFolderId(b.folderId), {ok:true}));
-    if (act==='importAll')    return R(superUser(u) && importAll(b.data));
-    if (act==='importUsersCSV') return R(superUser(u) && importUsersCSV(b.users));
-    if (act==='importDeptsCSV') return R(superUser(u) && importDeptsCSV(b.depts));
-    if (act==='changePw')     return R(pwChange(u, b.oldPw, b.newPw));
-    if (act==='sendMail')     return R(sendMail(b));
+    if (act==='saveDoc')      return R(canEdit(u) && (logAction(u, 'saveDoc', b.doc?.id), docSave(b.doc)));
+    if (act==='updateDoc')    return R(canEdit(u) && (logAction(u, 'updateDoc', b.id), docUpdate(b.id, b.patch)));
+    if (act==='deleteDoc')    return R(superUser(u) && (logAction(u, 'deleteDoc', b.id), docDel(b.id)));
+    if (act==='saveUser')     return R(superUser(u) && (logAction(u, 'saveUser', b.user?.empId), userSave(b.user)));
+    if (act==='delUser')      return R(superUser(u) && (logAction(u, 'delUser', b.id), userDel(b.id)));
+    if (act==='saveTemplate') return R(superUser(u) && (logAction(u, 'saveTemplate', ''), writeJ(F_TPL, b.tpl) || {ok:true}));
+    if (act==='saveDept')     return R(superUser(u) && (logAction(u, 'saveDept', b.dept?.code), deptSave(b.dept)));
+    if (act==='delDept')      return R(superUser(u) && (logAction(u, 'delDept', b.id), deptDel(b.id)));
+    if (act==='saveSysCfg')   return R(superUser(u) && (logAction(u, 'saveSysCfg', ''), sysSave(b.cfg)));
+    if (act==='setFolderId')  return R(superUser(u) && (logAction(u, 'setFolderId', b.folderId), setFolderId(b.folderId), {ok:true}));
+    if (act==='importAll')    return R(superUser(u) && (logAction(u, 'importAll', ''), importAll(b.data)));
+    if (act==='importUsersCSV') return R(superUser(u) && (logAction(u, 'importUsersCSV', ''), importUsersCSV(b.users)));
+    if (act==='importDeptsCSV') return R(superUser(u) && (logAction(u, 'importDeptsCSV', ''), importDeptsCSV(b.depts)));
+    if (act==='uploadImage')  return R(canEdit(u) && uploadImage(b.b64, b.name));
+    if (act==='installReminderTrigger') return R(superUser(u) && (logAction(u, 'installReminderTrigger', ''), installReminderTrigger()));
+    if (act==='getInventory') return R(canEdit(u) && {inventory: readJ(F_INVENTORY, [])});
+    if (act==='saveInvItem')  return R(superUser(u) && (logAction(u, 'saveInvItem', b.item.id), saveInvItem(b.item)));
+    if (act==='delInvItem')   return R(superUser(u) && (logAction(u, 'delInvItem', b.id), delInvItem(b.id)));
+    if (act==='getBorrows')   return R(canEdit(u) && {borrows: readJ(F_BORROWS, [])});
+    if (act==='saveBorrow')   return R(canEdit(u) && (logAction(u, 'saveBorrow', b.borrow.id), saveBorrow(b.borrow)));
+    if (act==='changePw')     return R((logAction(u, 'changePw', ''), pwChange(u, b.oldPw, b.newPw)));
+    if (act==='sendMail')     return R((logAction(u, 'sendMail', b.to), sendMail(b)));
     return R({error:'unknown:'+act});
   } catch(ex) { return R({error:ex.toString()}); }
 }
@@ -371,4 +383,199 @@ function sendMail(b) {
   writeJ('_maillog.json', log);
 
   return {ok:true, sent:toList.length};
+}
+
+// ── UPLOAD IMAGE ──────────────────────────────────────────────
+function uploadImage(b64, name) {
+  try {
+    const folder = getFolder();
+    let imgFolder;
+    const it = folder.getFoldersByName('Images');
+    if(it.hasNext()) imgFolder = it.next();
+    else imgFolder = folder.createFolder('Images');
+    
+    const parts = b64.split(',');
+    const data = parts.length > 1 ? parts[1] : parts[0];
+    let mime = 'image/jpeg';
+    if(parts.length > 1) {
+      const m = parts[0].match(/:(.*?);/);
+      if(m) mime = m[1];
+    }
+    
+    const blob = Utilities.newBlob(Utilities.base64Decode(data), mime, name || ('img_'+Date.now()));
+    const file = imgFolder.createFile(blob);
+    file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+    
+    return {ok:true, url: 'https://drive.google.com/uc?export=view&id=' + file.getId()};
+  } catch(e) {
+    throw new Error('Upload failed: ' + e.toString());
+  }
+}
+
+// ── AUDIT LOG ─────────────────────────────────────────────────
+function logAction(u, action, details) {
+  try {
+    const lk = LockService.getScriptLock();
+    if(lk.tryLock(5000)) {
+      const logs = readJ(F_AUDIT, []);
+      logs.unshift({
+        ts: new Date().toISOString(),
+        uId: u ? u.empId : 'SYSTEM',
+        uNm: u ? u.name : 'System',
+        role: u ? u.role : '',
+        act: action,
+        det: details || ''
+      });
+      if(logs.length > 500) logs.length = 500;
+      writeJ(F_AUDIT, logs);
+      lk.releaseLock();
+    }
+  } catch(e) {}
+}
+
+// ── AUTO REMINDER ─────────────────────────────────────────────
+function installReminderTrigger() {
+  try {
+    const triggers = ScriptApp.getProjectTriggers();
+    triggers.forEach(t => { if(t.getHandlerFunction() === 'dailyReminders') ScriptApp.deleteTrigger(t); });
+    ScriptApp.newTrigger('dailyReminders').timeBased().everyDays(1).atHour(8).create();
+    return {ok:true};
+  } catch(e) {
+    throw new Error("Trigger setup failed: " + e.message + " (Please run testAuth in Apps Script editor first)");
+  }
+}
+
+function dailyReminders() {
+  try {
+    const cfg = readJ(F_CFG, {});
+    const rCfg = cfg.reminder || {};
+    if(!rCfg.enabled || !rCfg.days) return;
+    
+    const daysThres = parseInt(rCfg.days, 10);
+    const now = Date.now();
+    const docs = readJ('IT_Equipment_Docs.json', {docs:[]}).docs || [];
+    const pendDocs = docs.filter(d => ['pending_it_officer','pending_it_manager','pending_recipient'].includes(d.status));
+    
+    let remindMap = {};
+    const allUsers = readJ(F_USERS, []);
+    
+    pendDocs.forEach(d => {
+      const ageMs = now - new Date(d.createdAt).getTime();
+      const ageDays = ageMs / (1000 * 60 * 60 * 24);
+      if(ageDays >= daysThres) {
+        let emails = [];
+        if(d.status === 'pending_it_officer') {
+          emails = allUsers.filter(u=>u.role==='it_staff'||u.role==='admin').map(u=>u.email).filter(Boolean);
+        } else if(d.status === 'pending_it_manager') {
+          const itManagerIds = cfg.itManagerIds || [];
+          emails = allUsers.filter(u=>itManagerIds.includes(u.empId)).map(u=>u.email).filter(Boolean);
+        } else if(d.status === 'pending_recipient') {
+          const hod = allUsers.find(u=>u.empId === d.hodEmpId);
+          if(hod && hod.email) emails.push(hod.email);
+        }
+        
+        emails.forEach(email => {
+          if(!remindMap[email]) remindMap[email] = [];
+          remindMap[email].push(d);
+        });
+      }
+    });
+    
+    const orgName = cfg.orgName || 'IT Department';
+    const appUrl = ScriptApp.getService().getUrl() || ''; // get the web app url
+    
+    for(const email in remindMap) {
+      const dlist = remindMap[email];
+      const subj = `[Reminder] มีเอกสารรอให้คุณพิจารณาลงนาม ${dlist.length} รายการ`;
+      let body = `เรียน ท่านผู้ใช้งาน\n\nระบบ IT Equipment Manager ตรวจพบเอกสารที่รอการลงนามจากท่านจำนวน ${dlist.length} รายการ ดังนี้:\n\n`;
+      let htmlBody = `<div style="font-family:sans-serif;color:#333"><p>เรียน ท่านผู้ใช้งาน,</p><p>ระบบ <strong>IT Equipment Manager</strong> ตรวจพบเอกสารที่รอการลงนามจากท่านจำนวน ${dlist.length} รายการ ดังนี้:</p><ul>`;
+      
+      dlist.forEach(d => {
+        body += `- เอกสาร ${d.id} (ชื่อผู้ครอบครอง: ${d.name})\n`;
+        htmlBody += `<li>เอกสาร <strong>${d.id}</strong> (ชื่อผู้ครอบครอง: ${d.name})</li>`;
+      });
+      
+      body += `\nกรุณาเข้าสู่ระบบเพื่อดำเนินการ: ${appUrl}\n\nขอบคุณ\n${orgName}`;
+      htmlBody += `</ul><p>กรุณาเข้าสู่ระบบเพื่อดำเนินการ: <a href="${appUrl}">ไปที่ระบบ</a></p><p>ขอบคุณ<br>${orgName}</p></div>`;
+      
+      MailApp.sendEmail({ to: email, subject: subj, body: body, htmlBody: htmlBody });
+    }
+  } catch(e) {
+    console.error("dailyReminders failed:", e);
+  }
+}
+
+// ── BORROWING SYSTEM (INVENTORY) ──────────────────────────────
+function saveInvItem(item) {
+  const lk = LockService.getScriptLock();
+  if(!lk.tryLock(5000)) throw new Error('System busy');
+  try {
+    let inv = readJ(F_INVENTORY, []);
+    if(item.id) {
+      const idx = inv.findIndex(i => i.id === item.id);
+      if(idx >= 0) inv[idx] = {...inv[idx], ...item};
+      else inv.push(item);
+    } else {
+      item.id = 'INV-' + Date.now();
+      item.status = item.status || 'available';
+      inv.push(item);
+    }
+    writeJ(F_INVENTORY, inv);
+    return {ok:true, item};
+  } finally { lk.releaseLock(); }
+}
+
+function delInvItem(id) {
+  const lk = LockService.getScriptLock();
+  if(!lk.tryLock(5000)) throw new Error('System busy');
+  try {
+    let inv = readJ(F_INVENTORY, []);
+    inv = inv.filter(i => i.id !== id);
+    writeJ(F_INVENTORY, inv);
+    return {ok:true};
+  } finally { lk.releaseLock(); }
+}
+
+// ── BORROWING SYSTEM (RECORDS) ────────────────────────────────
+function saveBorrow(borrow) {
+  const lk = LockService.getScriptLock();
+  if(!lk.tryLock(5000)) throw new Error('System busy');
+  try {
+    let borrows = readJ(F_BORROWS, []);
+    let inv = readJ(F_INVENTORY, []);
+    
+    if(!borrow.id) {
+      borrow.id = 'BRW-' + Date.now();
+      borrow.createdAt = new Date().toISOString();
+      borrow.status = borrow.status || 'active';
+      borrows.push(borrow);
+      
+      // Update inventory status to 'borrowed'
+      const invIdx = inv.findIndex(i => i.id === borrow.invId);
+      if(invIdx >= 0) {
+        inv[invIdx].status = 'borrowed';
+        writeJ(F_INVENTORY, inv);
+      }
+    } else {
+      const idx = borrows.findIndex(b => b.id === borrow.id);
+      if(idx >= 0) {
+        const oldBrw = borrows[idx];
+        borrows[idx] = {...oldBrw, ...borrow};
+        
+        // If it was returned just now
+        if(oldBrw.status !== 'returned' && borrow.status === 'returned') {
+          const invIdx = inv.findIndex(i => i.id === borrow.invId);
+          if(invIdx >= 0) {
+            inv[invIdx].status = 'available'; // back to available
+            writeJ(F_INVENTORY, inv);
+          }
+        }
+      } else {
+        borrows.push(borrow);
+      }
+    }
+    
+    writeJ(F_BORROWS, borrows);
+    return {ok:true, borrow};
+  } finally { lk.releaseLock(); }
 }

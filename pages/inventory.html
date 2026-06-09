@@ -1,0 +1,119 @@
+<div class="card">
+  <div class="sh" style="justify-content:space-between">
+    <span style="display:flex;align-items:center;gap:6px"><span class="si">&#128187;</span>จัดการเครื่องสำรอง (Spare Notebooks)</span>
+    <div style="display:flex;gap:6px;flex-wrap:wrap">
+      <button class="btn bp bsm" onclick="INV.openInvM()">+ เพิ่มเครื่องสำรอง</button>
+    </div>
+  </div>
+  
+  <div class="ecfg-tabs" style="margin-bottom:12px">
+    <button class="ecfg-tab on" id="itab-list" onclick="INV.tab('list')">รายการเครื่องสำรอง</button>
+    <button class="ecfg-tab" id="itab-borrows" onclick="INV.tab('borrows')">ประวัติการยืม-คืน</button>
+  </div>
+
+  <div class="ecfg-pane on" id="ipane-list">
+    <div class="tw">
+      <table>
+        <thead>
+          <tr>
+            <th>รหัสเครื่อง (INV ID)</th>
+            <th>ชื่อ / รายละเอียด</th>
+            <th>Brand / Model</th>
+            <th>Serial No.</th>
+            <th>สถานะ</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="inv-tb"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="ecfg-pane" id="ipane-borrows">
+    <div class="tw">
+      <table>
+        <thead>
+          <tr>
+            <th>วันที่ยืม</th>
+            <th>รหัสการยืม</th>
+            <th>เครื่องที่ยืม</th>
+            <th>ผู้ยืม / แผนก</th>
+            <th>กำหนดคืน</th>
+            <th>สถานะ</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="brw-tb"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Add/Edit Inventory Modal -->
+<div id="m-inv" class="ov" style="display:none">
+  <div class="modal">
+    <div class="mhd"><div class="mt" id="invm-t">เพิ่มเครื่องสำรอง</div><button class="mcl" onclick="INV.closeInvM()">&#10005;</button></div>
+    <div class="mbd">
+      <input type="hidden" id="inv-id">
+      <div class="fg2">
+        <div class="fg full"><label>ชื่ออุปกรณ์ *</label><input id="inv-n" placeholder="เช่น Notebook Spare 01"></div>
+        <div class="fg"><label>Brand</label><input id="inv-b" placeholder="Brand"></div>
+        <div class="fg"><label>Model</label><input id="inv-m" placeholder="Model"></div>
+        <div class="fg full"><label>Serial No. / Service Tag</label><input id="inv-s" placeholder="Serial No."></div>
+        <div class="fg"><label>สถานะ</label>
+          <select id="inv-st">
+            <option value="available">Available (ว่าง)</option>
+            <option value="maintenance">Maintenance (ซ่อมบำรุง)</option>
+          </select>
+        </div>
+        <div class="fg full"><label>หมายเหตุ</label><input id="inv-note" placeholder="หมายเหตุ"></div>
+      </div>
+    </div>
+    <div class="mft"><button class="btn bh" onclick="INV.closeInvM()">ยกเลิก</button><button class="btn bp" onclick="INV.saveInv()">&#128190; บันทึก</button></div>
+  </div>
+</div>
+
+<!-- Borrow Modal -->
+<div id="m-brw" class="ov" style="display:none">
+  <div class="modal">
+    <div class="mhd"><div class="mt">บันทึกการยืมเครื่องชั่วคราว</div><button class="mcl" onclick="INV.closeBrwM()">&#10005;</button></div>
+    <div class="mbd">
+      <div style="padding:10px;background:var(--prim);border-radius:6px;margin-bottom:12px;font-size:12px">
+        <strong id="brw-inv-name">Notebook Spare 01</strong><br>
+        <span style="color:var(--ink3)" id="brw-inv-desc">HP ProBook | SN: 12345</span>
+      </div>
+      <input type="hidden" id="brw-inv-id">
+      
+      <div class="fg"><label>ผู้ยืม (พิมพ์ชื่อหรือรหัส)</label>
+        <div style="position:relative">
+          <input id="brw-u-q" placeholder="ค้นหาผู้ยืม..." oninput="INV.searchUser()" autocomplete="off">
+          <div id="brw-u-dd" class="sdd"></div>
+        </div>
+        <div id="brw-u-sel" style="display:none;margin-top:6px;padding:6px 10px;background:var(--prim);border-radius:var(--r);font-size:11px;border:1px solid var(--bd2);align-items:center;justify-content:space-between">
+          <div><strong id="brw-u-n">Name</strong> <span id="brw-u-e" style="color:var(--ink3)"></span></div>
+          <button class="btn bh bsm" onclick="INV.clrUser()" style="padding:2px 6px">&#10005;</button>
+        </div>
+        <input type="hidden" id="brw-emp-id">
+        <input type="hidden" id="brw-emp-name">
+        <input type="hidden" id="brw-emp-dept">
+      </div>
+      <div class="fg2">
+        <div class="fg"><label>กำหนดคืน (ไม่บังคับ)</label><input type="date" id="brw-due"></div>
+        <div class="fg full"><label>หมายเหตุ</label><input id="brw-note" placeholder="เหตุผลที่ยืม..."></div>
+      </div>
+    </div>
+    <div class="mft"><button class="btn bh" onclick="INV.closeBrwM()">ยกเลิก</button><button class="btn bp" onclick="INV.saveBorrow()">&#10003; ยืนยันการยืม</button></div>
+  </div>
+</div>
+
+<!-- Return Borrow Modal -->
+<div id="m-brw-ret" class="ov" style="display:none">
+  <div class="modal" style="max-width:400px">
+    <div class="mhd"><div class="mt">&#8617; คืนเครื่องสำรอง</div><button class="mcl" onclick="INV.closeRetM()">&#10005;</button></div>
+    <div class="mbd">
+      <input type="hidden" id="brw-ret-id">
+      <div class="fg"><label>หมายเหตุการคืน / สภาพเครื่อง</label><textarea id="brw-ret-note" rows="3" placeholder="ระบุสภาพเครื่องเมื่อรับคืน..."></textarea></div>
+    </div>
+    <div class="mft"><button class="btn bh" onclick="INV.closeRetM()">ยกเลิก</button><button class="btn bgrn" onclick="INV.confirmReturn()">&#10003; ยืนยันรับคืน</button></div>
+  </div>
+</div>
