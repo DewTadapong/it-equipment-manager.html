@@ -208,7 +208,14 @@
       <!-- USERS -->
       <div id="s-users" style="display:none">
         <div class="card">
-          <div class="sh" style="justify-content:space-between"><span style="display:flex;align-items:center;gap:6px"><span class="si">&#128101;</span>จัดการผู้ใช้งาน</span><button class="btn bp bsm" onclick="A.openUM()">+ เพิ่มผู้ใช้</button></div>
+          <div class="sh" style="justify-content:space-between">
+            <span style="display:flex;align-items:center;gap:6px"><span class="si">&#128101;</span>จัดการผู้ใช้งาน</span>
+            <div style="display:flex;gap:6px;flex-wrap:wrap">
+              <button class="btn bh bsm" onclick="A.exportUsersCSV()">&#128229; Export CSV</button>
+              <label class="btn bh bsm" style="cursor:pointer;margin:0">&#128228; Import CSV<input type="file" accept=".csv" style="display:none" onchange="A.importUsersCSV(event)"></label>
+              <button class="btn bp bsm" onclick="A.openUM()">+ เพิ่มผู้ใช้</button>
+            </div>
+          </div>
           <div class="tw"><table><thead><tr><th>รหัสพนักงาน</th><th>ชื่อ-นามสกุล</th><th>แผนก</th><th>อีเมล</th><th>Role</th><th></th></tr></thead><tbody id="utb"></tbody></table></div>
         </div>
       </div>
@@ -218,7 +225,11 @@
         <div class="card">
           <div class="sh" style="justify-content:space-between">
             <span style="display:flex;align-items:center;gap:6px"><span class="si">&#127970;</span>จัดการแผนก (Department)</span>
-            <button class="btn bp bsm" onclick="A.openDeptM()">+ เพิ่มแผนก</button>
+            <div style="display:flex;gap:6px;flex-wrap:wrap">
+              <button class="btn bh bsm" onclick="A.exportDeptsCSV()">&#128229; Export CSV</button>
+              <label class="btn bh bsm" style="cursor:pointer;margin:0">&#128228; Import CSV<input type="file" accept=".csv" style="display:none" onchange="A.importDeptsCSV(event)"></label>
+              <button class="btn bp bsm" onclick="A.openDeptM()">+ เพิ่มแผนก</button>
+            </div>
           </div>
           <div class="tw"><table>
             <thead><tr><th>รหัสแผนก</th><th>ชื่อแผนก</th><th>คำอธิบาย</th><th></th></tr></thead>
@@ -388,13 +399,24 @@
             <div id="sn-recip-list" style="min-height:44px;padding:6px;border:1px solid var(--bd);border-radius:var(--r);background:#fafbfd;margin-bottom:8px;display:flex;flex-wrap:wrap;gap:6px;align-items:flex-start">
               <div style="color:var(--ink3);font-size:11px;padding:8px">ยังไม่มีผู้รับ</div>
             </div>
-            <!-- User search -->
-            <div style="font-size:11px;color:var(--ink3);margin-bottom:6px">&#128269; ค้นหาชื่อหรือรหัสพนักงาน เพื่อเพิ่มผู้รับ</div>
-            <div class="hw">
-              <input id="sn-search" placeholder="พิมพ์ชื่อ / รหัสพนักงาน / อีเมล..." oninput="A.searchSnUser()" autocomplete="off" style="width:100%">
-              <div id="sn-search-dd" class="hdd"></div>
+            <div class="fg" style="margin-bottom:12px">
+              <label>&#128269; ค้นหาชื่อหรือรหัสพนักงาน เพื่อเพิ่มผู้รับ</label>
+              <div class="hw">
+                <input id="sn-search" placeholder="พิมพ์ชื่อ / รหัสพนักงาน / อีเมล..." oninput="A.searchSnUser()" autocomplete="off" style="width:100%">
+                <div id="sn-search-dd" class="hdd"></div>
+              </div>
+              <div style="font-size:10px;color:var(--amb);margin-top:5px">&#9888; ผู้ใช้ต้องมีอีเมลในระบบ (ตั้งค่าได้ที่หน้า จัดการผู้ใช้)</div>
             </div>
-            <div style="font-size:10px;color:var(--amb);margin-top:5px">&#9888; ผู้ใช้ต้องมีอีเมลในระบบ (ตั้งค่าได้ที่หน้า จัดการผู้ใช้)</div>
+
+            <div style="font-size:11px;font-weight:700;color:var(--ink2);margin-bottom:8px">&#128231; CC Emails (เพิ่มเติม)</div>
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;margin-bottom:8px;font-weight:600">
+              <input type="checkbox" id="sn-cc-hod" style="accent-color:var(--pri)"> อัตโนมัติ CC ไปยัง HOD (ผู้รับ) ของเอกสาร
+            </label>
+            <div style="display:flex;gap:6px">
+              <input id="sn-cc-input" placeholder="พิมพ์ email แล้วกด Enter หรือ + เพิ่ม" style="flex:1;padding:7px 10px;border:1px solid var(--bd2);border-radius:var(--r);font-size:12px;font-family:inherit;outline:none" onkeydown="A.snCcKeydown(event)">
+              <button class="btn bh bsm" onclick="A.addSnCCTag()">+ เพิ่ม</button>
+            </div>
+            <div class="cc-tags" id="sn-cc-tags" style="margin-top:6px;margin-bottom:14px"></div>
           </div>
 
           <!-- Template -->

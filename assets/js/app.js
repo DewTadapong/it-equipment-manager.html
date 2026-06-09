@@ -125,7 +125,10 @@ const A={
     if(p==='login'&&!GAS.ok())document.getElementById('gas-warn').style.display='';
     window.scrollTo(0,0);
   },
+  curPage: '',
   sub(name){
+    this.curPage = name;
+    if(name === 'dash') this.startPoll(); else this.stopPoll();
     ['dash','create','detail','users','dept','io','settings','tpl'].forEach(s=>{const el=document.getElementById('s-'+s);if(el)el.style.display=s===name?'':'none';});
     ['sb-dash','sb-create','sb-users','sb-dept','sb-io','sb-settings','sb-tpl'].forEach(id=>{const el=document.getElementById(id);if(el)el.classList.remove('on');});
     const si=document.getElementById('sb-'+name);if(si)si.classList.add('on');
@@ -153,6 +156,24 @@ const A={
     try{this.docs=await GAS.getDocs();}
     catch(ex){this.docs=[];if(ex.message.includes('Session')||ex.message.includes('login')){this.logout();return;}this.toast('\u0e42\u0e2b\u0e25\u0e14\u0e44\u0e21\u0e48\u0e2a\u0e33\u0e40\u0e23\u0e47\u0e08: '+ex.message,'err');}
     finally{this.unload();}
+  },
+
+  pollTmr: null,
+  startPoll(){
+    this.stopPoll();
+    this.pollTmr = setInterval(() => this.silentRefresh(), 60000); // 1 minute
+  },
+  stopPoll(){
+    if(this.pollTmr) clearInterval(this.pollTmr);
+  },
+  async silentRefresh(){
+    if(this.curPage !== 'dash') return;
+    try{
+      const newDocs = await GAS.getDocs();
+      this.docs = newDocs;
+      this.renderStats();
+      this.filter();
+    }catch(e){} // silent fail
   },
 
   renderStats(filteredDocs){
@@ -540,7 +561,19 @@ const A={
       if(!toEmails.length) return;
 
       const to = toEmails.join(',');
-      const cc = Array.isArray(cfg.ccEmails) ? cfg.ccEmails.join(',') : (cfg.ccEmails||'');
+      let cc = Array.isArray(cfg.ccEmails) ? cfg.ccEmails.join(',') : (cfg.ccEmails||'');
+
+      if(notifCfg.ccEmails) cc = (cc ? cc + ',' : '') + notifCfg.ccEmails;
+      if(notifCfg.ccHOD && doc.hodEmpId) {
+        let hodEmail = '';
+        const cached = (this.users||[]).find(u => u.empId === doc.hodEmpId);
+        if(cached) hodEmail = cached.email;
+        else {
+           try { const res = await GAS.searchUsers(doc.hodEmpId); if(res.length) hodEmail = res[0].email; } catch(e){}
+        }
+        if(!hodEmail && doc.hodEmail) hodEmail = doc.hodEmail;
+        if(hodEmail) cc = (cc ? cc + ',' : '') + hodEmail;
+      }
 
       // Template
       const tplSubj = notifCfg.subject || '[IT Equipment] \u0e25\u0e07\u0e19\u0e32\u0e21\u0e41\u0e25\u0e49\u0e27 \u2014 {doc_id} ({role})';
@@ -889,13 +922,30 @@ const A={
   // ── Sign Notification Config ─────────────────────────────
   signNotifRecipients: [],
   signNotifSearch: '',
+  snCcList: [],
+
+  renderSnCCTags(){
+    const el=document.getElementById('sn-cc-tags');if(!el)return;
+    el.innerHTML=this.snCcList.map((em,i)=>`<span class="cc-tag">${em}<span class="cc-tag-x" onclick="A.removeSnCCTag(${i})">×</span></span>`).join('');
+  },
+  addSnCCTag(){
+    const inp=document.getElementById('sn-cc-input');if(!inp)return;
+    const raw=inp.value;
+    const emails=raw.split(/[,\s]+/).map(s=>s.trim()).filter(s=>s.includes('@'));
+    emails.forEach(em=>{if(!this.snCcList.includes(em))this.snCcList.push(em);});
+    inp.value='';this.renderSnCCTags();
+  },
+  removeSnCCTag(i){this.snCcList.splice(i,1);this.renderSnCCTags();},
+  snCcKeydown(ev){if(ev.key==='Enter'||ev.key===','){ev.preventDefault();this.addSnCCTag();}},
 
   async saveSignNotifConfig(){
     const cfg = {
       enabled: document.getElementById('sn-enabled')?.checked || false,
       subject: document.getElementById('sn-subj')?.value || '',
       body: document.getElementById('sn-body')?.value || '',
-      recipients: this.signNotifRecipients
+      recipients: this.signNotifRecipients,
+      ccHOD: document.getElementById('sn-cc-hod')?.checked || false,
+      ccEmails: this.snCcList.join(',')
     };
     this.load('\u0e01\u0e33\u0e25\u0e31\u0e07\u0e1a\u0e31\u0e19\u0e17\u0e36\u0e01...');
     try{
@@ -915,6 +965,12 @@ const A={
     if(body) body.value = sn.body || '\u0e40\u0e23\u0e35\u0e22\u0e19 \u0e17\u0e35\u0e21 IT\n\n\u0e21\u0e35\u0e01\u0e32\u0e23\u0e25\u0e07\u0e19\u0e32\u0e21{role}\u0e43\u0e19\u0e40\u0e2d\u0e01\u0e2a\u0e32\u0e23 {doc_id} \u0e40\u0e23\u0e35\u0e22\u0e1a\u0e23\u0e49\u0e2d\u0e22\u0e41\u0e25\u0e49\u0e27\n\n\u0e1c\u0e39\u0e49\u0e25\u0e07\u0e19\u0e32\u0e21: {signer_name}\n\u0e27\u0e31\u0e19\u0e17\u0e35\u0e48: {signed_at}\n\u0e0a\u0e37\u0e48\u0e2d\u0e1c\u0e39\u0e49\u0e04\u0e23\u0e2d\u0e1a\u0e04\u0e23\u0e2d\u0e07: {owner_name}\n\u0e41\u0e1c\u0e19\u0e01: {dept}\n\u0e42\u0e23\u0e07\u0e1e\u0e22\u0e32\u0e1a\u0e32\u0e25: {hospital}\n\n\u0e02\u0e2d\u0e1a\u0e04\u0e38\u0e13\n{org_name}';
     this.signNotifRecipients = Array.isArray(sn.recipients) ? [...sn.recipients] : [];
     this.renderSnRecipients();
+    
+    const chod=document.getElementById('sn-cc-hod');
+    if(chod) chod.checked=sn.ccHOD||false;
+    const ccRaw=sn.ccEmails||'';
+    this.snCcList=Array.isArray(ccRaw)?ccRaw:ccRaw.split(',').map(s=>s.trim()).filter(Boolean);
+    this.renderSnCCTags();
   },
 
   renderSnRecipients(){
@@ -1117,6 +1173,89 @@ const A={
   },
 
   /* ── IMPORT / EXPORT ── */
+  /* ── CSV Helpers ── */
+  buildCSV(headers, rows) {
+    const esc = (s) => `"${(s||'').toString().replace(/"/g, '""')}"`;
+    const lines = [headers.map(esc).join(',')];
+    rows.forEach(r => lines.push(r.map(esc).join(',')));
+    return '\uFEFF' + lines.join('\n'); // Add BOM for Excel UTF-8 support
+  },
+  parseCSV(txt) {
+    const lines = txt.split(/\r?\n/).filter(l=>l.trim());
+    if(lines.length<2) return [];
+    const parseLine = (line) => {
+      const result = []; let current = '', inQuotes = false;
+      for(let i=0; i<line.length; i++){
+        const c = line[i];
+        if(c === '"' && line[i+1] === '"') { current += '"'; i++; }
+        else if(c === '"') { inQuotes = !inQuotes; }
+        else if(c === ',' && !inQuotes) { result.push(current); current = ''; }
+        else { current += c; }
+      }
+      result.push(current); return result;
+    };
+    const headers = parseLine(lines[0]).map(h=>h.trim());
+    return lines.slice(1).map(l=>{
+      const row = parseLine(l);
+      const obj = {};
+      headers.forEach((h,i)=>obj[h] = row[i]?.trim()||'');
+      return obj;
+    });
+  },
+
+  /* ── EXPORT / IMPORT CSV ── */
+  exportUsersCSV(){
+    if(!this.users || !this.users.length){ this.toast('ไม่มีข้อมูล User','err'); return; }
+    const headers = ['empId','name','dept','email','role'];
+    const rows = this.users.map(u => headers.map(h => u[h]||''));
+    const csv = this.buildCSV(headers, rows);
+    const blob = new Blob([csv],{type:'text/csv;charset=utf-8'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url;
+    a.download = 'IT_Users_' + new Date().toISOString().slice(0,10) + '.csv';
+    a.click(); URL.revokeObjectURL(url);
+  },
+  async importUsersCSV(event){
+    const file=event.target.files[0];if(!file)return;
+    try{
+      const text=await file.text();
+      const users=this.parseCSV(text);
+      if(!users.length){ this.toast('รูปแบบไฟล์ไม่ถูกต้อง หรือไม่มีข้อมูล','err'); return; }
+      if(!confirm(`นำเข้าข้อมูล User ${users.length} รายการ?\n(ข้อมูลเดิมจะถูกอัปเดต ถ้าไม่มีจะถูกเพิ่มใหม่)`))return;
+      this.load('กำลัง import users...');
+      const result=await GAS.post({action:'importUsersCSV', users});
+      this.toast(`Import สำเร็จ: เพิ่ม ${result.added||0}, อัปเดต ${result.updated||0}`,'ok');
+      await this.loadUsers();
+    }catch(ex){ this.toast('Import failed: '+ex.message,'err'); }
+    finally{ this.unload(); event.target.value=''; }
+  },
+
+  exportDeptsCSV(){
+    if(!this.depts || !this.depts.length){ this.toast('ไม่มีข้อมูล Department','err'); return; }
+    const headers = ['code','name','desc'];
+    const rows = this.depts.map(d => headers.map(h => d[h]||''));
+    const csv = this.buildCSV(headers, rows);
+    const blob = new Blob([csv],{type:'text/csv;charset=utf-8'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url;
+    a.download = 'IT_Depts_' + new Date().toISOString().slice(0,10) + '.csv';
+    a.click(); URL.revokeObjectURL(url);
+  },
+  async importDeptsCSV(event){
+    const file=event.target.files[0];if(!file)return;
+    try{
+      const text=await file.text();
+      const depts=this.parseCSV(text);
+      if(!depts.length){ this.toast('รูปแบบไฟล์ไม่ถูกต้อง หรือไม่มีข้อมูล','err'); return; }
+      if(!confirm(`นำเข้าข้อมูล Department ${depts.length} รายการ?\n(ข้อมูลเดิมจะถูกอัปเดต ถ้าไม่มีจะถูกเพิ่มใหม่)`))return;
+      this.load('กำลัง import depts...');
+      const result=await GAS.post({action:'importDeptsCSV', depts});
+      this.toast(`Import สำเร็จ: เพิ่ม ${result.added||0}, อัปเดต ${result.updated||0}`,'ok');
+      await this.loadDepts();
+    }catch(ex){ this.toast('Import failed: '+ex.message,'err'); }
+    finally{ this.unload(); event.target.value=''; }
+  },
+
   async exportAll(){
     this.load('กำลัง export...');
     try{

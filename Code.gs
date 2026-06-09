@@ -127,6 +127,8 @@ function doPost(e) {
     if (act==='saveSysCfg')   return R(superUser(u) && sysSave(b.cfg));
     if (act==='setFolderId')  return R(superUser(u) && (setFolderId(b.folderId), {ok:true}));
     if (act==='importAll')    return R(superUser(u) && importAll(b.data));
+    if (act==='importUsersCSV') return R(superUser(u) && importUsersCSV(b.users));
+    if (act==='importDeptsCSV') return R(superUser(u) && importDeptsCSV(b.depts));
     if (act==='changePw')     return R(pwChange(u, b.oldPw, b.newPw));
     if (act==='sendMail')     return R(sendMail(b));
     return R({error:'unknown:'+act});
@@ -193,6 +195,24 @@ function userSave(user) {
   writeJ(F_USERS, list); return {ok:true};
 }
 function userDel(id)   { writeJ(F_USERS, usersRaw().filter(u=>u.id!==id)); return {ok:true}; }
+function importUsersCSV(users) {
+  const list = usersRaw();
+  let added = 0, updated = 0;
+  users.forEach(u => {
+    const i = list.findIndex(x => x.empId === u.empId);
+    if (i >= 0) {
+      const pw = u.pw ? hashPw(u.pw) : list[i].pw;
+      list[i] = {...list[i], ...u, pw};
+      updated++;
+    } else {
+      u.id = u.id || u.empId;
+      u.pw = hashPw(u.pw || u.empId);
+      list.push(u);
+      added++;
+    }
+  });
+  writeJ(F_USERS, list); return {ok:true, added, updated};
+}
 function resetAdmin()  {
   deleteJ(F_USERS); deleteJ(F_SESS);
   usersRaw(); // recreate defaults
@@ -286,6 +306,16 @@ function deptSave(dept) {
   writeJ(F_DEPTS,list); return {ok:true};
 }
 function deptDel(id) { writeJ(F_DEPTS,readJ(F_DEPTS,[]).filter(d=>d.id!==id)); return {ok:true}; }
+function importDeptsCSV(depts) {
+  const list = readJ(F_DEPTS,[]);
+  let added = 0, updated = 0;
+  depts.forEach(d => {
+    const i = list.findIndex(x => x.code === d.code);
+    if (i >= 0) { list[i] = {...list[i], ...d}; updated++; }
+    else { d.id = d.id || d.code; list.push(d); added++; }
+  });
+  writeJ(F_DEPTS, list); return {ok:true, added, updated};
+}
 
 // ── IMPORT / EXPORT ───────────────────────────────────────────
 function exportAll() {

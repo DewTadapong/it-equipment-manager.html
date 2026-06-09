@@ -21,7 +21,7 @@ const TDE={
     if(!tfc || !wrap) return;
     const padding = 32; // 16px padding on both sides
     const availableW = tfc.clientWidth - padding;
-    const imgW = document.getElementById('tfc-bg').offsetWidth || 794;
+    const imgW = 794; // Always use base A4 width for zoom calculation
     let z = availableW / imgW;
     if(z > 1) z = 1; // Don't scale up past 100% by default
     z = Math.max(0.3, parseFloat(z.toFixed(2)));
